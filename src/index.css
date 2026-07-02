@@ -1,0 +1,173 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  
+  --color-goldi-blue: #0A3B73;
+  --color-goldi-blue-light: #155AA8;
+  --color-goldi-blue-dark: #052244;
+  --color-goldi-dark: #05101E;
+  --color-goldi-darker: #02070D;
+  --color-goldi-green: #8CC63F;
+  --color-goldi-green-light: #A4D955;
+  --color-goldi-white: #ffffff;
+}
+
+@media (pointer: fine) {
+  body, html, * {
+    cursor: none !important;
+  }
+}
+
+body {
+  @apply bg-slate-50 text-slate-800 antialiased selection:bg-goldi-blue/20 selection:text-goldi-blue;
+}
+
+/* Custom utility classes for futuristic UI */
+.glass-panel {
+  @apply bg-white border border-slate-200 rounded-2xl shadow-sm transition-shadow transition-transform duration-300;
+}
+
+/* Hide Botpress Branding */
+.bpw-powered-by,
+.bpw-layout__header-powered-by,
+.bp-powered-by,
+.botpress__branding,
+.bp-widget-branding,
+a[href*="botpress.com"],
+a[href*="botpress.cloud"] {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.glass-panel-hover {
+  @apply hover:shadow-md hover:border-goldi-blue/30;
+}
+
+.text-gradient {
+  @apply text-transparent bg-clip-text bg-gradient-to-r from-goldi-blue to-goldi-blue-light;
+}
+
+.text-gradient-blue {
+  @apply text-transparent bg-clip-text bg-gradient-to-r from-goldi-blue-light to-blue-500;
+}
+
+.glow-effect {
+  box-shadow: 0 0 20px rgba(10, 59, 115, 0.05), inset 0 0 20px rgba(10, 59, 115, 0.02);
+}
+
+.glow-hover:hover {
+  box-shadow: 0 0 25px rgba(10, 59, 115, 0.1);
+}
+
+.btn-primary {
+  @apply px-8 py-4 rounded-full bg-goldi-blue text-white font-bold hover:bg-goldi-blue-dark transition-all flex items-center gap-2 shadow-sm hover:shadow-md;
+}
+
+.btn-secondary {
+  @apply px-8 py-4 rounded-full bg-white text-goldi-blue font-medium border border-goldi-blue/30 hover:bg-slate-50 hover:border-goldi-blue transition-all shadow-sm;
+}
+
+body.global-dark {
+  background-color: #050505 !important;
+  color: #f4f4f5 !important;
+  
+  --color-slate-50: #050505;
+  --color-slate-100: #0a0a0a;
+  --color-slate-200: #171717;
+  --color-slate-300: #262626;
+  --color-slate-400: #52525b;
+  --color-slate-500: #71717a;
+  --color-slate-600: #a1a1aa;
+  --color-slate-700: #d4d4d8;
+  --color-slate-800: #e4e4e7;
+  --color-slate-900: #f4f4f5;
+}
+
+
+body.global-dark .bg-slate-50,
+body.global-dark .bg-white,
+body.global-dark .bg-slate-100 {
+  background-color: #050505 !important;
+}
+
+body.global-dark .glass-panel {
+  background-color: rgba(24, 24, 27, 0.5) !important;
+  border-color: #27272a !important;
+}
+
+body.global-dark .glass-panel:hover,
+body.global-dark .glass-panel-hover:hover {
+  border-color: #8CC63F !important;
+  box-shadow: 0 0 20px rgba(140, 198, 63, 0.15) !important;
+}
+
+body.global-dark .text-slate-900,
+body.global-dark .text-slate-800,
+body.global-dark .text-slate-700,
+body.global-dark .text-slate-600 {
+  color: #f4f4f5 !important;
+}
+
+body.global-dark .text-slate-500,
+body.global-dark .text-slate-400 {
+  color: #a1a1aa !important;
+}
+
+body.global-dark .border-slate-200,
+body.global-dark .border-slate-300,
+body.global-dark .border-slate-100 {
+  border-color: #27272a !important;
+}
+
+/* Fix gradients */
+body.global-dark .from-slate-50 {
+  --tw-gradient-from: #050505 var(--tw-gradient-from-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+body.global-dark .via-slate-50\/90 {
+  --tw-gradient-via: rgba(5, 5, 5, 0.9) var(--tw-gradient-via-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important;
+}
+body.global-dark .to-slate-50 {
+  --tw-gradient-to: #050505 var(--tw-gradient-to-position) !important;
+}
+body.global-dark .from-slate-50\/20 {
+  --tw-gradient-from: rgba(5, 5, 5, 0.2) var(--tw-gradient-from-position) !important;
+}
+
+/* Specific component fixes for dark mode */
+body.global-dark .hover\:bg-slate-50:hover {
+  background-color: rgba(140, 198, 63, 0.1) !important;
+}
+body.global-dark .text-goldi-blue {
+  color: #8CC63F !important;
+}
+body.global-dark .bg-goldi-blue {
+  background-color: #8CC63F !important;
+  color: #050505 !important;
+}
+body.global-dark .border-goldi-blue {
+  border-color: #8CC63F !important;
+}
+body.global-dark .bg-goldi-blue\/10 {
+  background-color: rgba(140, 198, 63, 0.1) !important;
+}
+body.global-dark .border-goldi-blue\/30 {
+  border-color: rgba(140, 198, 63, 0.3) !important;
+}
+
+body.global-dark .logo-white {
+  filter: brightness(0) invert(1) !important;
+}
+
+
+body *, body .glass-panel {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow;
+  transition-duration: 700ms;
+  transition-timing-function: ease-in-out;
+}
