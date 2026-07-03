@@ -90,6 +90,7 @@ export const HelocPro = () => {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="mb-12 flex justify-center"
         >
+          <h1 className="sr-only">Heloc Pro</h1>
           <div className="overflow-hidden h-14 md:h-[5.5rem] flex items-end">
             <img 
               src="https://heloc.goldisolar.com/wp-content/uploads/2021/12/goldi_Heloc.webp" 

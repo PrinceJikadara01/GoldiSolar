@@ -1,0 +1,4 @@
+src/components/GlobalPresenceGlobe.tsx(5,19): error TS2554: Expected 1 arguments, but got 0.
+src/components/GlobalPresenceGlobe.tsx(108,28): error TS2339: Property 'lat' does not exist on type 'object'.
+src/components/GlobalPresenceGlobe.tsx(109,28): error TS2339: Property 'lng' does not exist on type 'object'.
+src/components/GlobalPresenceGlobe.tsx(110,29): error TS2339: Property 'name' does not exist on type 'object'.

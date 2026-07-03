@@ -144,6 +144,7 @@ const Navbar = () => {
     : "bg-goldi-blue/10 text-goldi-blue border border-goldi-blue/30 hover:bg-goldi-blue hover:text-white shadow-[0_0_15px_rgba(140,198,63,0.1)] hover:shadow-[0_0_20px_rgba(140,198,63,0.3)]";
 
   return (
+    <header>
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${getNavBgClass()}`}
     >
@@ -178,16 +179,18 @@ const Navbar = () => {
                   <ChevronDown className="w-4 h-4 ml-1 transition-transform group-hover:rotate-180" />
                   <span className={`absolute left-0 bottom-0 w-full h-[2px] ${isDarkMode ? "bg-white" : "bg-goldi-blue"} transform origin-left transition-transform duration-300 ease-out ${location.pathname.includes('/heloc') || location.pathname.includes('/module') ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"}`} />
                 </span>
-                <div className={`absolute top-full left-0 mt-2 w-48 shadow-xl rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0 overflow-hidden ${dropdownBgClass}`}>
-                  {link.dropdown.map((sublink) => (
-                    <Link
-                      key={sublink.name}
-                      to={sublink.path}
-                      className={`block px-4 py-3 text-sm transition-colors ${dropdownTextClass}`}
-                    >
-                      {sublink.name}
-                    </Link>
-                  ))}
+                <div className={`absolute top-full left-0 pt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0`}>
+                  <div className={`shadow-xl rounded-xl overflow-hidden ${dropdownBgClass}`}>
+                    {link.dropdown.map((sublink) => (
+                      <Link
+                        key={sublink.name}
+                        to={sublink.path}
+                        className={`block px-4 py-3 text-sm transition-colors ${dropdownTextClass}`}
+                      >
+                        {sublink.name}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               </div>
             ) : (
@@ -289,6 +292,7 @@ const Navbar = () => {
         )}
       </AnimatePresence>
     </nav>
+    </header>
   );
 };
 
@@ -656,7 +660,8 @@ const Home = () => {
                 <span>Sustainable Energy for Tomorrow</span>
               </div>
 
-              <motion.h1
+              <h1 className="sr-only">Powering the Future of Energy</h1>
+              <motion.h1 aria-hidden="true"
                 className="font-display text-4xl sm:text-5xl md:text-7xl font-bold leading-tight mb-3 md:mb-6 text-slate-900 tracking-tight"
                 initial="hidden"
                 animate="visible"
@@ -697,7 +702,7 @@ const Home = () => {
 
               <p className="text-base sm:text-lg md:text-xl text-slate-600 max-w-2xl mb-4 md:mb-10 leading-relaxed">
                 Accelerating the global transition to sustainable power with
-                India's most advanced photovoltaic modules and comprehensive EPC
+                India&apos;s most advanced photovoltaic modules and comprehensive EPC
                 infrastructure.
               </p>
             </div>
@@ -1036,7 +1041,7 @@ const About = () => {
           Goldi Solar
         </h1>
         <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-          India's most quality-conscious solar brand. We are driven by a vision
+          India&apos;s most quality-conscious solar brand. We are driven by a vision
           to create a sustainable future and make clean energy accessible to
           all.
         </p>
@@ -1050,15 +1055,15 @@ const About = () => {
               <span>A Legacy of Quality</span>
             </div>
             <h2 className="text-3xl font-bold text-slate-900 mb-6 font-display">
-              Transforming Tomorrow's Energy
+              Transforming Tomorrow&apos;s Energy
             </h2>
             <p className="text-slate-600 mb-4 leading-relaxed text-lg">
-              Goldi Solar is India's largest Solar PV module manufacturing
+              Goldi Solar is India&apos;s largest Solar PV module manufacturing
               company with annual capacity of 15.2 GW. Since inception in 2011,
               the company has been supplying world-class high efficiency modules
               in India and various geographies across the globe. Recently, the
               company recorded the largest and highest manufacturing expansion
-              in India's renewable industry for Solar PV Modules from 3 GW to
+              in India&apos;s renewable industry for Solar PV Modules from 3 GW to
               15.2 GW in the last 14 months.
             </p>
             <p className="text-slate-600 mb-4 leading-relaxed text-lg">
@@ -1074,7 +1079,7 @@ const About = () => {
             </p>
             <p className="text-slate-600 mb-8 leading-relaxed text-lg">
               Goldi Solar is committed to driving sustainability through
-              innovative solar solutions. Our mission aligns with India's goal
+              innovative solar solutions. Our mission aligns with India&apos;s goal
               of decarbonization, self-reliant (Atma-nirbhar) in solar
               manufacturing and achieving Net Zero emissions before 2070.
             </p>
@@ -1136,7 +1141,7 @@ const Contact = () => (
           Get in <span className="text-gradient">Touch</span>
         </h1>
         <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-          Ready to transition to solar? Whether you're looking for modules, EPC
+          Ready to transition to solar? Whether you&apos;re looking for modules, EPC
           services, or partnerships, our experts are here to help.
         </p>
       </div>
@@ -1405,7 +1410,7 @@ const CustomCursor = () => {
         mass: 0.8
       }}
     >
-      <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait">
         {!hasInteracted && isHomePage && (
           <motion.div
             key="big-orb"
@@ -1571,24 +1576,24 @@ export default function App() {
         {/* Ambient background glows */}
         <div className="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-goldi-blue/20 rounded-full blur-[120px] pointer-events-none" />
         <div className="fixed bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] bg-goldi-blue/10 rounded-full blur-[120px] pointer-events-none" />
-
         <Navbar />
-
-        <AnimatePresence mode="wait">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/epc" element={<EPC />} />
-            <Route path="/calculator" element={<SolarCalculator />} />
-            <Route path="/heloc-pro" element={<HelocPro />} />
-            <Route path="/heloc-plus" element={<HelocPlus />} />
-            <Route path="/module-anatomy" element={<ModuleShowcase />} />
-            <Route path="/explore-modules" element={<ExploreModules />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-          </Routes>
-        </AnimatePresence>
-
+        <main className="flex-grow flex flex-col relative w-full h-full">
+          <AnimatePresence mode="wait">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/epc" element={<EPC />} />
+              <Route path="/calculator" element={<SolarCalculator />} />
+              <Route path="/heloc-pro" element={<HelocPro />} />
+              <Route path="/heloc-plus" element={<HelocPlus />} />
+              <Route path="/module-anatomy" element={<ModuleShowcase />} />
+              <Route path="/explore-modules" element={<ExploreModules />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+            </Routes>
+          </AnimatePresence>
+        </main>
         <Footer />
+
       </div>
     </Router>
   );

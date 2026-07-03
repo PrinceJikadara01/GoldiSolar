@@ -2,9 +2,18 @@ import React, { useRef, useEffect, useState } from 'react';
 import Globe from 'react-globe.gl';
 
 export const GlobalPresenceGlobe = () => {
-  const globeEl = useRef<any>();
+  const globeEl = useRef<any>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+
+  type LocationData = {
+    lat: number;
+    lng: number;
+    name: string;
+    size?: number;
+    dotSize?: number;
+    color?: string;
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -15,10 +24,8 @@ export const GlobalPresenceGlobe = () => {
         });
       }
     };
-
     window.addEventListener('resize', handleResize);
     handleResize();
-
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -63,7 +70,6 @@ export const GlobalPresenceGlobe = () => {
     { lat: 25.5941, lng: 85.1376, name: "", color: "#22c55e", dotSize: 0.5 },
     { lat: 22.5726, lng: 88.3639, name: "", color: "#22c55e", dotSize: 0.5 },
     { lat: 22.7196, lng: 75.8577, name: "", color: "#22c55e", dotSize: 0.5 },
-
     // Orange (Channel Partners)
     { lat: 23.0225, lng: 72.5714, name: "", color: "#f97316", dotSize: 0.5 },
     { lat: 26.9124, lng: 75.7873, name: "", color: "#f97316", dotSize: 0.5 },
@@ -75,7 +81,6 @@ export const GlobalPresenceGlobe = () => {
     { lat: 13.0827, lng: 80.2707, name: "", color: "#f97316", dotSize: 0.5 },
     { lat: 26.1445, lng: 91.7362, name: "", color: "#f97316", dotSize: 0.5 },
     { lat: 23.2599, lng: 77.4126, name: "", color: "#f97316", dotSize: 0.5 },
-
     // White (Dealers)
     { lat: 30.9010, lng: 75.8573, name: "", color: "#ffffff", dotSize: 0.4 },
     { lat: 27.1767, lng: 78.0081, name: "", color: "#ffffff", dotSize: 0.4 },
@@ -105,13 +110,13 @@ export const GlobalPresenceGlobe = () => {
           backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
           backgroundColor="rgba(0,0,0,1)"
           labelsData={gData}
-          labelLat={d => d.lat}
-          labelLng={d => d.lng}
-          labelText={d => d.name}
-          labelSize={d => (d as any).size || 1.5}
-          labelDotRadius={d => (d as any).dotSize || ((d as any).size ? 1.2 : 0.8)}
+          labelLat={(d) => (d as LocationData).lat}
+          labelLng={(d) => (d as LocationData).lng}
+          labelText={(d) => (d as LocationData).name}
+          labelSize={(d) => (d as LocationData).size || 1.5}
+          labelDotRadius={(d) => (d as LocationData).dotSize || ((d as LocationData).size ? 1.2 : 0.8)}
           labelDotOrientation={() => 'right'}
-          labelColor={d => (d as any).color || '#facc15'}
+          labelColor={(d) => (d as LocationData).color || '#facc15'}
           labelResolution={2}
           labelAltitude={0.01}
           atmosphereColor="#fbbf24"
