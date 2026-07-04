@@ -1,11 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist+Pixel&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-pixel: "Geist Pixel", sans-serif;
   
   --color-goldi-blue: #0A3B73;
+
   --color-goldi-blue-light: #155AA8;
   --color-goldi-blue-dark: #052244;
   --color-goldi-dark: #05101E;
@@ -171,3 +174,12 @@ body *, body .glass-panel {
   transition-duration: 700ms;
   transition-timing-function: ease-in-out;
 }
+
+.geist-pixel {
+  font-family: "Geist Pixel", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings: "ELSH" 0;
+}
+body.global-dark .bg-white\/90 { background-color: rgba(5, 5, 5, 0.9) !important; }

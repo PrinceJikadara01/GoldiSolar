@@ -71,6 +71,7 @@ const ThemeToggle = ({ isDarkMode, toggleDarkMode, className = "" }: { isDarkMod
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLElement>(null);
   const [isGlobalDark, setIsGlobalDark] = useState(() => {
     const path = window.location.pathname;
     return document.body.classList.contains('global-dark') || path === '/' || ['/heloc-pro', '/heloc-plus', '/module-anatomy', '/explore-modules'].includes(path);
@@ -78,6 +79,18 @@ const Navbar = () => {
   const location = useLocation();
   const isHomePage = location.pathname === "/";
   const isDarkMode = isGlobalDark || ['/heloc-pro', '/heloc-plus', '/module-anatomy', '/explore-modules'].includes(location.pathname);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (mobileMenuOpen && menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [mobileMenuOpen]);
 
   useEffect(() => {
     const handleGlobalDark = () => setIsGlobalDark(true);
@@ -99,10 +112,8 @@ const Navbar = () => {
     { 
       name: "Modules", 
       dropdown: [
-        { name: "HELOC PRO", path: "/heloc-pro" },
-        { name: "HELOC PLUS", path: "/heloc-plus" },
-        { name: "Anatomy of a Module", path: "/module-anatomy" },
         { name: "Explore Modules", path: "/explore-modules" },
+        { name: "Anatomy of a Module", path: "/module-anatomy" },
       ]
     },
     { name: "EPC Solutions", path: "/epc" },
@@ -124,12 +135,12 @@ const Navbar = () => {
 
   const getNavBgClass = () => {
     if (!scrolled && !isHomePage) {
-       return isDarkMode ? "bg-transparent py-8 md:py-10" : "bg-transparent py-8 md:py-10";
+       return isDarkMode ? "bg-[#050505] py-8 md:py-10" : "bg-white py-8 md:py-10";
     }
     if (!isHomePage || scrolled) {
        return isDarkMode 
-         ? "bg-[#050505]/90 backdrop-blur-md border-b border-zinc-800 py-6 md:py-8 shadow-lg" 
-         : "bg-slate-50/90 backdrop-blur-md border-b border-slate-200 py-6 md:py-8 shadow-lg";
+         ? "bg-[#050505] border-b border-zinc-800 py-6 md:py-8 shadow-lg" 
+         : "bg-white border-b border-slate-200 py-6 md:py-8 shadow-lg";
     }
     return "bg-transparent py-8 md:py-10";
   };
@@ -143,8 +154,69 @@ const Navbar = () => {
     ? "bg-white/10 text-white border-white/20 hover:bg-white hover:text-black shadow-[0_0_15px_rgba(255,255,255,0.05)] hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]" 
     : "bg-goldi-blue/10 text-goldi-blue border border-goldi-blue/30 hover:bg-goldi-blue hover:text-white shadow-[0_0_15px_rgba(140,198,63,0.1)] hover:shadow-[0_0_20px_rgba(140,198,63,0.3)]";
 
+  if (location.pathname === "/calculator") {
+    return (
+      <header ref={menuRef}>
+        <div className="fixed top-6 right-6 z-[100] flex items-center justify-end">
+          <AnimatePresence>
+            {mobileMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, x: 20, scale: 0.95 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 20, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                className={`mr-4 overflow-hidden border shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full h-14 flex items-center ${isDarkMode ? "bg-[#1f1f1f] border-[#333]" : "bg-white/90 backdrop-blur-md border-slate-200"}`}
+              >
+                <div className="flex items-center gap-6 px-6 max-w-[75vw] sm:max-w-none overflow-x-auto no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                  {navLinks.map((link) => (
+                    <Link
+                      key={link.name}
+                      to={link.path || "/explore-modules"}
+                      className={`text-sm font-medium whitespace-nowrap transition-colors ${location.pathname === (link.path || "/explore-modules") ? activeTextColorClass : textColorClass}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {link.name}
+                    </Link>
+                  ))}
+                  <button onClick={toggleDarkMode} className={`flex items-center justify-center p-1.5 rounded-full transition-colors ${isDarkMode ? "bg-zinc-800 text-yellow-400" : "bg-slate-100 text-slate-600"}`}>
+                    {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className={`w-14 h-14 relative shrink-0 rounded-full shadow-[0_4px_20px_rgb(0,0,0,0.05)] flex items-center justify-center transition-all duration-500 z-[101] border overflow-hidden group ${isDarkMode ? "bg-white border-white hover:bg-slate-100 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]" : "bg-white backdrop-blur-md border-slate-200 hover:border-slate-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]"}`}
+          >
+            <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${isDarkMode ? "bg-gradient-to-tr from-slate-200 to-transparent" : "bg-gradient-to-tr from-slate-100 to-transparent"}`} />
+            
+            <div className="flex flex-col items-end justify-center gap-[5px] relative z-10 w-6 h-[19px]">
+              <motion.span 
+                 animate={mobileMenuOpen ? { rotate: 45, y: 7, width: "100%" } : { rotate: 0, y: 0, width: "100%" }} 
+                 transition={{ duration: 0.3, ease: "easeInOut" }}
+                 className={`h-[2px] rounded-full origin-center transition-colors bg-slate-900`} 
+              />
+              <motion.span 
+                 animate={mobileMenuOpen ? { opacity: 0, x: 10 } : { opacity: 1, x: 0 }} 
+                 transition={{ duration: 0.3, ease: "easeInOut" }}
+                 className={`h-[2px] w-[75%] rounded-full transition-colors bg-slate-900`} 
+              />
+              <motion.span 
+                 animate={mobileMenuOpen ? { rotate: -45, y: -7, width: "100%" } : { rotate: 0, y: 0, width: "50%" }} 
+                 transition={{ duration: 0.3, ease: "easeInOut" }}
+                 className={`h-[2px] rounded-full origin-center transition-colors bg-slate-900`} 
+              />
+            </div>
+          </button>
+        </div>
+      </header>
+    );
+  }
+
   return (
-    <header>
+    <header ref={menuRef}>
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${getNavBgClass()}`}
     >
@@ -174,24 +246,24 @@ const Navbar = () => {
           {navLinks.map((link) => (
             link.dropdown ? (
               <div key={link.name} className="relative group py-1">
-                <span className={`flex items-center cursor-pointer tracking-wide ${location.pathname.includes('/heloc') || location.pathname.includes('/module') ? activeTextColorClass : textColorClass}`}>
-                  {link.name}
-                  <ChevronDown className="w-4 h-4 ml-1 transition-transform group-hover:rotate-180" />
-                  <span className={`absolute left-0 bottom-0 w-full h-[2px] ${isDarkMode ? "bg-white" : "bg-goldi-blue"} transform origin-left transition-transform duration-300 ease-out ${location.pathname.includes('/heloc') || location.pathname.includes('/module') ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"}`} />
-                </span>
-                <div className={`absolute top-full left-0 pt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0`}>
-                  <div className={`shadow-xl rounded-xl overflow-hidden ${dropdownBgClass}`}>
-                    {link.dropdown.map((sublink) => (
-                      <Link
-                        key={sublink.name}
-                        to={sublink.path}
-                        className={`block px-4 py-3 text-sm transition-colors ${dropdownTextClass}`}
-                      >
-                        {sublink.name}
-                      </Link>
-                    ))}
+                  <span className={`flex items-center cursor-pointer tracking-wide ${textColorClass}`}>
+                    {link.name}
+                    <ChevronDown className="w-4 h-4 ml-1 transition-transform group-hover:rotate-180" />
+                    <span className={`absolute left-0 bottom-0 w-full h-[2px] ${isDarkMode ? "bg-white" : "bg-goldi-blue"} transform origin-left transition-transform duration-300 ease-out scale-x-0 group-hover:scale-x-100`} />
+                  </span>
+                  <div className={`absolute top-full left-0 pt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0`}>
+                    <div className={`shadow-xl rounded-xl overflow-hidden ${dropdownBgClass}`}>
+                      {link.dropdown.map((sublink) => (
+                        <Link
+                          key={sublink.name}
+                          to={sublink.path}
+                          className={`block px-4 py-3 text-[11px] font-semibold tracking-wide transition-colors ${isDarkMode ? "text-[#8CC63F] hover:bg-zinc-800 hover:text-white" : "text-goldi-blue hover:bg-slate-50 hover:text-goldi-dark"}`}
+                        >
+                          {sublink.name}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
-                </div>
               </div>
             ) : (
               <Link
@@ -219,14 +291,26 @@ const Navbar = () => {
         </div>
 
         <button
-          className={`lg:hidden z-20 ${isDarkMode ? "text-white" : "text-slate-600"}`}
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className={`lg:hidden w-12 h-12 relative shrink-0 rounded-full flex items-center justify-center transition-all duration-500 z-20 border overflow-hidden group ${isDarkMode ? "bg-white border-white hover:bg-slate-100 shadow-[0_4px_20px_rgba(255,255,255,0.2)]" : "bg-white/50 backdrop-blur-md border-slate-200 hover:border-slate-300 shadow-[0_4px_20px_rgb(0,0,0,0.05)]"}`}
         >
-          {mobileMenuOpen ? (
-            <X className="w-6 h-6" />
-          ) : (
-            <Menu className="w-6 h-6" />
-          )}
+          <div className="flex flex-col items-end justify-center gap-[5px] relative z-10 w-5 h-[17px]">
+            <motion.span 
+               animate={mobileMenuOpen ? { rotate: 45, y: 7, width: "100%" } : { rotate: 0, y: 0, width: "100%" }} 
+               transition={{ duration: 0.3, ease: "easeInOut" }}
+               className={`h-[2px] rounded-full origin-center transition-colors bg-slate-900`} 
+            />
+            <motion.span 
+               animate={mobileMenuOpen ? { opacity: 0, x: 10 } : { opacity: 1, x: 0 }} 
+               transition={{ duration: 0.3, ease: "easeInOut" }}
+               className={`h-[2px] w-[75%] rounded-full transition-colors bg-slate-900`} 
+            />
+            <motion.span 
+               animate={mobileMenuOpen ? { rotate: -45, y: -7, width: "100%" } : { rotate: 0, y: 0, width: "50%" }} 
+               transition={{ duration: 0.3, ease: "easeInOut" }}
+               className={`h-[2px] rounded-full origin-center transition-colors bg-slate-900`} 
+            />
+          </div>
         </button>
       </div>
 
@@ -234,60 +318,66 @@ const Navbar = () => {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className={`absolute top-full left-0 w-full border-b py-4 px-6 lg:hidden flex flex-col gap-4 shadow-2xl ${isDarkMode ? "bg-zinc-900 border-zinc-800" : "bg-white border-slate-200"}`}
+            initial={{ opacity: 0, y: -10, x: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, x: 20, scale: 0.95 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className={`absolute top-full right-4 mt-4 w-[280px] lg:hidden flex flex-col gap-4 p-5 rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.15)] border overflow-hidden origin-top-right ${isDarkMode ? "bg-zinc-900/95 backdrop-blur-xl border-zinc-800 shadow-[0_20px_40px_rgba(0,0,0,0.6)]" : "bg-white/95 backdrop-blur-xl border-slate-200"}`}
           >
-            {navLinks.map((link) => (
-              link.dropdown ? (
-                <div key={link.name} className="flex flex-col gap-2">
-                  <span className={`text-lg font-medium ${isDarkMode ? "text-white" : "text-slate-800"}`}>{link.name}</span>
-                  <div className={`flex flex-col pl-4 gap-2 border-l-2 ml-2 ${isDarkMode ? "border-zinc-800" : "border-slate-100"}`}>
-                    {link.dropdown.map((sublink) => (
-                      <Link
-                        key={sublink.name}
-                        to={sublink.path}
-                        className={`text-base ${isDarkMode ? "text-zinc-400 hover:text-white" : "text-slate-600 hover:text-goldi-blue"}`}
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {sublink.name}
-                      </Link>
-                    ))}
+            <div className="flex flex-col gap-1">
+              {navLinks.map((link) => (
+                link.dropdown ? (
+                  <div key={link.name} className="flex flex-col gap-1 mt-2 first:mt-0">
+                    <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider ${isDarkMode ? "text-zinc-500" : "text-slate-400"}`}>{link.name}</span>
+                    <div className="flex flex-col">
+                      {link.dropdown.map((sublink) => (
+                        <Link
+                          key={sublink.name}
+                          to={sublink.path}
+                          className={`text-[12px] font-semibold tracking-wide transition-all px-3 py-2.5 rounded-xl flex items-center ${isDarkMode ? "text-[#8CC63F] hover:text-white hover:bg-zinc-800" : "text-goldi-blue hover:text-goldi-dark hover:bg-slate-50"}`}
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {sublink.name}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <Link
-                  key={link.name}
-                  to={link.path!}
-                  className={`text-lg font-medium ${isDarkMode ? "text-white" : "text-slate-800"}`}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {link.name}
-                </Link>
-              )
-            ))}
-            <div className={`mt-4 p-1.5 flex items-center rounded-xl ${isDarkMode ? "bg-zinc-800/80" : "bg-slate-100"}`}>
-              <button
-                onClick={() => { if (isDarkMode) toggleDarkMode(); }}
-                className={`flex-1 py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-all ${!isDarkMode ? "bg-white text-goldi-blue shadow-sm" : "text-zinc-400 hover:text-white"}`}
-              >
-                <Sun className="w-4 h-4" /> Light
-              </button>
-              <button
-                onClick={() => { if (!isDarkMode) toggleDarkMode(); }}
-                className={`flex-1 py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-all ${isDarkMode ? "bg-zinc-700 text-yellow-400 shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
-              >
-                <Moon className="w-4 h-4" /> Dark
-              </button>
+                ) : (
+                  <Link
+                    key={link.name}
+                    to={link.path!}
+                    className={`text-sm font-medium transition-all px-3 py-2.5 rounded-xl flex items-center ${isDarkMode ? "text-zinc-200 hover:text-white hover:bg-zinc-800" : "text-slate-800 hover:text-goldi-blue hover:bg-slate-50"}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.name}
+                  </Link>
+                )
+              ))}
             </div>
-            <Link
-              to="/contact"
-              className={`mt-4 px-6 py-3 text-center rounded-xl font-bold transition-all ${isDarkMode ? "bg-zinc-100 text-zinc-900 shadow-md" : "bg-goldi-blue text-white shadow-sm"}`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Contact Us
-            </Link>
+            
+            <div className={`pt-4 mt-2 border-t flex flex-col gap-3 ${isDarkMode ? "border-zinc-800/80" : "border-slate-100"}`}>
+              <div className={`p-1 flex items-center rounded-xl ${isDarkMode ? "bg-zinc-800/60" : "bg-slate-100"}`}>
+                <button
+                  onClick={() => { if (isDarkMode) toggleDarkMode(); }}
+                  className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold transition-all ${!isDarkMode ? "bg-white text-goldi-blue shadow-sm" : "text-zinc-400 hover:text-white"}`}
+                >
+                  <Sun className="w-3.5 h-3.5" /> Light
+                </button>
+                <button
+                  onClick={() => { if (!isDarkMode) toggleDarkMode(); }}
+                  className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold transition-all ${isDarkMode ? "bg-zinc-700 text-yellow-400 shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
+                >
+                  <Moon className="w-3.5 h-3.5" /> Dark
+                </button>
+              </div>
+              <Link
+                to="/contact"
+                className={`w-full py-2.5 text-center rounded-xl font-bold text-xs tracking-wide transition-all ${isDarkMode ? "bg-white text-zinc-900 hover:bg-zinc-100" : "bg-goldi-blue text-white hover:bg-goldi-blue-dark shadow-sm hover:shadow"}`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Contact Us
+              </Link>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -313,6 +403,8 @@ const Footer = () => {
       window.removeEventListener('global-dark-disabled', handleGlobalLight);
     }
   }, []);
+
+  if (location.pathname === '/calculator') return null;
 
   const isDarkMode = isGlobalDark || ['/heloc-pro', '/heloc-plus', '/module-anatomy', '/explore-modules'].includes(location.pathname);
 

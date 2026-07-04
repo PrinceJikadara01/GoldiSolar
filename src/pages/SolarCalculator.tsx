@@ -1,282 +1,386 @@
-import React, { useState, useRef } from 'react';
-import { motion } from 'motion/react';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { PageTransition } from '../App';
-import { Leaf, DollarSign, Sun, ShieldCheck, Edit2 } from 'lucide-react';
+import { Send, Loader2, Sparkles, Plus, Search, Monitor, ChevronDown, Mic, Zap, AreaChart, DollarSign, ShieldCheck, ArrowRight } from 'lucide-react';
+
+type Message = {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  data?: any;
+};
 
 export const SolarCalculator = () => {
-  const [bill, setBill] = useState<number>(3000);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [prompt, setPrompt] = useState("");
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isListening, setIsListening] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Constants
-  const PANEL_CAPACITY_W = 540; // 540W per panel
-  const PANEL_COST = 15000; // rough cost per panel in INR
-  const UNITS_PER_KW_PER_MONTH = 120; // rough estimate
-  const COST_PER_UNIT = 8; // average INR per unit
-
-  // Derived values
-  const monthlyUnitsConsumed = bill / COST_PER_UNIT;
-  const kwNeeded = monthlyUnitsConsumed / UNITS_PER_KW_PER_MONTH;
-  const rawPanelsNeeded = Math.ceil((kwNeeded * 1000) / PANEL_CAPACITY_W);
-  
-  // Actual mathematical panels for ROI calculation
-  const panelsNeeded = Math.max(1, rawPanelsNeeded);
-  
-  // Cap at 20 panels for visual grid (10x2), scaling down so it fills up smoothly up to ₹25,000
-  const visualPanelsNeeded = Math.min(20, Math.ceil(panelsNeeded / 2.5));
-
-  const yearlySavings = bill * 12;
-  const treesSaved = Math.round(panelsNeeded * 1.5);
-  const totalCost = panelsNeeded * PANEL_COST;
-  const roiYears = (totalCost / yearlySavings).toFixed(1);
-
-  // Generate panels array for the roof
-  const renderPanels = () => {
-    const panels = [];
-    for (let i = 0; i < 20; i++) {
-      const isActive = i < visualPanelsNeeded;
-      panels.push(
-        <motion.div
-          key={i}
-          initial={false}
-          animate={{
-            opacity: isActive ? 1 : 0.05,
-            scale: isActive ? 1 : 0.95,
-            y: isActive ? -2 : 0, // Lift slightly off roof
-            z: isActive ? 2 : 0,
-          }}
-          transition={{ duration: 0.4, delay: isActive ? i * 0.03 : 0 }}
-          className={`relative w-full h-full rounded-[1px] overflow-hidden ${isActive ? 'shadow-[0_2px_4px_rgba(0,0,0,0.5)] border border-slate-400/80' : 'border border-slate-700/30'}`}
-          style={{
-            background: isActive 
-              ? 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%)' 
-              : '#1e293b',
-          }}
-        >
-          {/* Solar Panel Grid Lines */}
-          {isActive && (
-            <>
-              {/* Vertical line */}
-              <div className="absolute inset-0 flex justify-evenly pointer-events-none">
-                <div className="w-[1px] h-full bg-white/20"></div>
-              </div>
-              {/* Horizontal lines */}
-              <div className="absolute inset-0 flex flex-col justify-evenly pointer-events-none">
-                <div className="h-[1px] w-full bg-white/20"></div>
-                <div className="h-[1px] w-full bg-white/20"></div>
-                <div className="h-[1px] w-full bg-white/20"></div>
-              </div>
-              {/* Glare effect */}
-              <div className="absolute top-0 left-[-50%] w-[200%] h-full bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" style={{ transform: 'rotate(30deg)' }}></div>
-            </>
-          )}
-        </motion.div>
-      );
-    }
-    return panels;
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
   };
+
+  const toggleListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
+
+  const startListening = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in your browser.");
+      return;
+    }
+    
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'en-IN';
+    
+    (window as any).currentRecognition = recognition;
+
+    recognition.onstart = () => setIsListening(true);
+    
+    recognition.onresult = (event: any) => {
+      const current = event.resultIndex;
+      const transcript = event.results[current][0].transcript;
+      setPrompt(transcript);
+    };
+    
+    recognition.onerror = (event: any) => {
+      console.error(event.error);
+      setIsListening(false);
+    };
+    
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+    
+    recognition.start();
+  };
+  
+  const stopListening = () => {
+    if ((window as any).currentRecognition) {
+      (window as any).currentRecognition.stop();
+    }
+    setIsListening(false);
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages.length, isAiLoading]);
+
+  const handleAiSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!prompt.trim() || isAiLoading) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: prompt.trim(),
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setPrompt("");
+    if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+    }
+    setIsAiLoading(true);
+
+    try {
+      const response = await fetch("/api/solar-ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: userMessage.content }),
+      });
+
+      let data;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        throw new Error(`Server returned a non-JSON response with status ${response.status}`);
+      }
+      
+      if (!response.ok || data.error) {
+        throw new Error(data.error || "An error occurred while processing.");
+      }
+      
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: data.message || "Here is your solar prediction.",
+        data: data
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+    } catch (error: any) {
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: error.message || "Sorry, I couldn't process your request right now.",
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleAiSubmit();
+    }
+  };
+
+  const adjustTextareaHeight = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setPrompt(e.target.value);
+    e.target.style.height = 'auto';
+    e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
+  };
+
+  const hasMessages = messages.length > 0;
 
   return (
     <PageTransition>
-      <section className="pt-40 sm:pt-48 pb-20 px-6 min-h-[90vh] bg-slate-50 flex flex-col items-center overflow-hidden">
-        <div className="text-center mb-12 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-goldi-green/10 text-goldi-green text-sm font-medium mb-6"
-          >
-            <Sun className="w-4 h-4" />
-            Live ROI Calculator
-          </motion.div>
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4 tracking-tight">
-            See Your <span className="text-goldi-green">Savings</span> Grow
-          </h1>
-          <p className="text-slate-600 max-w-2xl mx-auto">
-            Adjust your monthly electricity bill to instantly see how many solar panels you need, and the impact it will have on your wallet and the environment.
-          </p>
-        </div>
-
-        <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          
-          {/* 3D House Container */}
-          <div className="relative h-[300px] md:h-[400px] flex items-center justify-center bg-slate-100/50 rounded-3xl border border-slate-200 overflow-visible" style={{ perspective: '1500px' }}>
-            {/* Ambient sun glow behind house */}
-            <div className="absolute top-1/4 left-1/4 w-[200px] h-[200px] bg-goldi-green/20 rounded-full blur-[60px]" />
-
-            <div className="scale-[0.55] sm:scale-75 md:scale-100" style={{ transformStyle: 'preserve-3d' }}>
+      <div className="flex flex-col h-screen bg-white font-sans selection:bg-slate-100 selection:text-slate-900 relative">
+        <main className={`flex-1 relative z-10 overflow-y-auto px-4 sm:px-6 pt-24 md:pt-28 ${hasMessages ? 'pb-40' : 'flex items-center justify-center'}`}>
+          <div className="max-w-3xl mx-auto w-full">
+            
+            {!hasMessages ? (
               <motion.div 
-                className="relative w-[320px] h-[240px] transform-gpu origin-center"
-                initial={{ rotateX: -15, rotateY: -35 }}
-                animate={{ rotateX: -15, rotateY: -35 }}
-                whileHover={{ rotateY: -25, rotateX: -10 }}
-                transition={{ type: 'spring', stiffness: 50, damping: 20 }}
-                style={{ transformStyle: 'preserve-3d' }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="flex flex-col items-center text-center -mt-32 w-full"
               >
-              {/* Ground Shadow */}
-              <div className="absolute bottom-[-80px] left-[-40px] w-[400px] h-[360px] bg-black/20 blur-[30px] rounded-full pointer-events-none" style={{ transform: 'rotateX(90deg) translateZ(-120px)' }} />
-
-              {/* Front Wall */}
-              <div className="absolute bottom-0 w-[320px] h-[140px] bg-[#f8fafc] border-x border-[#e2e8f0]" style={{ transform: 'translateZ(120px)' }}>
-                {/* Modern Wood Panel Section */}
-                <div className="absolute bottom-0 left-[30px] w-[100px] h-[140px] bg-gradient-to-b from-[#8B5A2B] to-[#5c3a18] shadow-lg flex justify-center">
-                  {/* Door */}
-                  <div className="absolute bottom-0 w-[55px] h-[95px] bg-[#1a1005] rounded-t-sm border border-black/50">
-                    <div className="absolute top-1/2 right-2 w-1.5 h-10 bg-slate-300 rounded-sm"></div>
-                  </div>
-                </div>
-                {/* Modern Floor-to-Ceiling Windows */}
-                <div className="absolute bottom-[20px] right-[30px] w-[140px] h-[100px] bg-[#0f172a] border-[6px] border-[#334155] shadow-[0_5px_15px_rgba(0,0,0,0.2)] flex overflow-hidden">
-                   <div className="w-1/3 h-full border-r-4 border-[#1e293b]"></div>
-                   <div className="w-1/3 h-full border-r-4 border-[#1e293b]"></div>
-                   {/* Glass reflection */}
-                   <div className="absolute top-[-20px] left-[-30px] w-[200px] h-[40px] bg-white/5 rotate-45 pointer-events-none"></div>
-                   <div className="absolute top-[40px] left-[-30px] w-[200px] h-[15px] bg-white/5 rotate-45 pointer-events-none"></div>
-                </div>
-                {/* Exterior Lights */}
-                <div className="absolute bottom-[100px] left-[145px] w-[4px] h-[8px] bg-slate-300 rounded-sm shadow-[0_5px_15px_rgba(255,255,255,0.8)]">
-                  <div className="absolute top-[8px] left-[-10px] w-[24px] h-[40px] bg-yellow-100/30 blur-[10px]"></div>
-                </div>
-                <div className="absolute bottom-[100px] left-[15px] w-[4px] h-[8px] bg-slate-300 rounded-sm shadow-[0_5px_15px_rgba(255,255,255,0.8)]">
-                  <div className="absolute top-[8px] left-[-10px] w-[24px] h-[40px] bg-yellow-100/30 blur-[10px]"></div>
-                </div>
-              </div>
-              
-              {/* Back Wall */}
-              <div className="absolute bottom-0 w-[320px] h-[140px] bg-[#e2e8f0]" style={{ transform: 'rotateY(180deg) translateZ(120px)' }} />
-              
-              {/* Left Wall */}
-              <div className="absolute bottom-0 left-[40px] w-[240px] h-[140px] bg-[#f1f5f9] border-x border-[#cbd5e1]" style={{ transform: 'rotateY(-90deg) translateZ(160px)' }}>
-                 {/* Long horizontal window */}
-                 <div className="absolute top-[40px] left-[50px] w-[140px] h-[35px] bg-[#0f172a] border-[4px] border-[#334155] shadow-[inset_0_0_10px_rgba(0,0,0,1)] flex overflow-hidden">
-                   <div className="absolute top-[-10px] left-[-20px] w-[180px] h-[15px] bg-white/5 rotate-45 pointer-events-none"></div>
-                 </div>
-              </div>
-              
-              {/* Right Wall */}
-              <div className="absolute bottom-0 left-[40px] w-[240px] h-[140px] bg-[#e2e8f0]" style={{ transform: 'rotateY(90deg) translateZ(160px)' }} />
-
-              {/* Roof Front (The one with panels) */}
-              <div className="absolute bottom-[140px] left-[-10px] w-[340px] h-[170px] bg-[#1e293b] origin-bottom shadow-[inset_0_5px_20px_rgba(0,0,0,0.5)] border-b-[6px] border-[#0f172a] overflow-hidden" style={{ transform: 'translateZ(125px) rotateX(40deg)' }}>
-                 {/* Solar Panels Grid Layout */}
-                 <div className="w-full h-full p-4 pt-8 pb-6 grid grid-cols-10 grid-rows-2 gap-[4px] transform-gpu" style={{ transformStyle: 'preserve-3d' }}>
-                   {renderPanels()}
-                 </div>
-              </div>
-
-              {/* Roof Back */}
-              <div className="absolute bottom-[140px] left-[-10px] w-[340px] h-[170px] bg-[#0f172a] origin-bottom shadow-[inset_0_5px_15px_rgba(0,0,0,0.6)] border-b-[4px] border-[#020617]" style={{ transform: 'rotateY(180deg) translateZ(125px) rotateX(40deg)' }} />
-
-              {/* Left Gable */}
-              <div className="absolute bottom-[140px] left-[40px] w-[240px] h-[100px] bg-[#f1f5f9]" style={{ transform: 'rotateY(-90deg) translateZ(160px)', clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}>
-              </div>
-              
-              {/* Right Gable */}
-              <div className="absolute bottom-[140px] left-[40px] w-[240px] h-[100px] bg-[#e2e8f0]" style={{ transform: 'rotateY(90deg) translateZ(160px)', clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }} />
-              
-            </motion.div>
-            </div>
-          </div>
-
-          {/* Controls & Metrics */}
-          <div className="flex flex-col gap-8 relative z-10">
-            {/* Slider Card */}
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-goldi-blue via-goldi-green to-goldi-blue" />
-              
-              <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-end mb-6 gap-4 sm:gap-0">
-                <div>
-                  <p className="text-sm text-slate-500 font-medium mb-1">Monthly Electricity Bill</p>
-                  <div className="flex items-center group">
-                    <span className="text-4xl font-bold text-slate-900 tracking-tight">₹</span>
-                    <input
-                      ref={inputRef}
-                      type="number"
-                      value={bill || ''}
-                      onChange={(e) => setBill(Number(e.target.value))}
-                      className="text-4xl font-bold text-slate-900 tracking-tight bg-transparent border-b-2 border-transparent hover:border-slate-200 focus:border-goldi-green focus:outline-none w-40 p-0 ml-1 transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <Edit2 
-                      className="w-5 h-5 text-slate-300 ml-2 cursor-pointer hover:text-goldi-green transition-colors opacity-0 group-hover:opacity-100 focus-within:opacity-100" 
-                      onClick={() => inputRef.current?.focus()}
-                    />
-                  </div>
-                </div>
-                <button 
-                  onClick={() => inputRef.current?.focus()}
-                  className="flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-full text-sm font-medium transition-colors border border-slate-200"
+                <motion.h1 
+                  className="text-4xl sm:text-5xl geist-pixel mb-10 tracking-tight flex items-center justify-center gap-4 text-slate-900"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
                 >
-                  <Edit2 className="w-4 h-4" />
-                  Enter Manually
-                </button>
-              </div>
-
-              <input
-                type="range"
-                min="1000"
-                max="25000"
-                step="500"
-                value={bill}
-                onChange={(e) => setBill(Number(e.target.value))}
-                className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-goldi-green focus:outline-none focus:ring-2 focus:ring-goldi-green/50"
-              />
-              <div className="flex justify-between text-xs text-slate-400 mt-2 font-medium">
-                <span>₹1,000</span>
-                <span>₹25,000+</span>
-              </div>
-            </div>
-
-            {/* Glowing Stats Grid */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* Yearly Savings */}
-              <motion.div 
-                key={yearlySavings}
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="bg-slate-900 p-6 rounded-3xl relative overflow-hidden group"
-              >
-                <div className="absolute inset-0 bg-goldi-green/20 blur-[30px] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <DollarSign className="w-8 h-8 text-goldi-green mb-4 relative z-10" />
-                <p className="text-slate-400 text-sm font-medium mb-1 relative z-10">Yearly Savings</p>
-                <h4 className="text-3xl font-bold text-white relative z-10 drop-shadow-[0_0_15px_rgba(163,230,53,0.5)]">
-                  ₹{(yearlySavings).toLocaleString()}
-                </h4>
-              </motion.div>
-
-              {/* Trees Saved */}
-              <motion.div 
-                key={treesSaved}
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="bg-slate-900 p-6 rounded-3xl relative overflow-hidden group"
-              >
-                <div className="absolute inset-0 bg-emerald-500/20 blur-[30px] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <Leaf className="w-8 h-8 text-emerald-400 mb-4 relative z-10" />
-                <p className="text-slate-400 text-sm font-medium mb-1 relative z-10">Trees Saved / Yr</p>
-                <h4 className="text-3xl font-bold text-white relative z-10 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]">
-                  {treesSaved}
-                </h4>
-              </motion.div>
-
-              {/* System Size */}
-              <motion.div className="bg-white p-6 rounded-3xl border border-slate-100 col-span-2 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-goldi-blue/5 flex items-center justify-center">
-                    <ShieldCheck className="w-6 h-6 text-goldi-blue" />
+                  <img src="/favicon.png" alt="Goldi Solar" className="w-12 h-12 sm:w-14 sm:h-14 object-contain drop-shadow-sm animate-[spin_4s_linear_infinite]" />
+                  <span>
+                    {getGreeting()}
+                  </span>
+                </motion.h1>
+                
+                <div className="w-full">
+                  <div className="w-full relative group">
+                    {/* Outer Glow */}
+                    <div className="absolute -inset-[1.5px] rounded-[34px] opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 blur-[8px] overflow-hidden pointer-events-none">
+                      <div className="absolute top-1/2 left-1/2 w-[2000px] h-[2000px] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#4285F4,#EA4335,#FBBC05,#34A853,#4285F4)] animate-[spin_4s_linear_infinite]" />
+                    </div>
+                    
+                    {/* Padding Wrapper for Sharp Border */}
+                    <div className="relative w-full rounded-[34px] p-[1.5px] overflow-hidden z-10">
+                      {/* The spinning gradient background */}
+                      <div className="absolute top-1/2 left-1/2 w-[2000px] h-[2000px] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#4285F4,#EA4335,#FBBC05,#34A853,#4285F4)] animate-[spin_4s_linear_infinite] opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                      
+                      <form onSubmit={handleAiSubmit} className="relative z-10 w-full rounded-[32.5px] bg-slate-100 group-focus-within:bg-white transition-all duration-200 flex flex-row items-end px-2 py-2">
+                        <textarea
+                          ref={textareaRef}
+                          value={prompt}
+                          onChange={adjustTextareaHeight}
+                          onKeyDown={handleKeyDown}
+                          placeholder="Ask Goldi Solar"
+                          className="flex-1 bg-transparent px-4 py-3 text-slate-700 placeholder-slate-500 focus:outline-none resize-none overflow-y-auto text-[15px] leading-relaxed self-center max-h-[150px]"
+                          disabled={isAiLoading}
+                          rows={1}
+                          style={{ height: "48px" }}
+                        />
+                        
+                        <div className="flex items-center gap-1 shrink-0 mb-1.5">
+                          <button 
+                            type="button" 
+                            onClick={toggleListening}
+                            className={`p-2 rounded-full transition-colors flex ${isListening ? 'text-red-500 bg-red-50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200'}`}
+                          >
+                            <Mic className={`w-5 h-5 ${isListening ? 'animate-pulse' : ''}`} />
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={isAiLoading || !prompt.trim()}
+                            className={`p-2 rounded-full transition-colors ${
+                              prompt.trim() 
+                                ? 'bg-[#0A3B73] text-white hover:bg-[#155AA8]' 
+                                : 'bg-slate-200 text-slate-900 hover:bg-slate-300 disabled:opacity-50 disabled:bg-transparent'
+                            }`}
+                          >
+                            {isAiLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowRight className="w-5 h-5" />}
+                          </button>
+                        </div>
+                      </form>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-slate-500 font-medium">Recommended System</p>
-                    <p className="text-lg font-bold text-slate-900">{kwNeeded.toFixed(1)} kW</p>
+                  <div className="flex flex-wrap justify-center gap-2 mt-6">
+                     {[
+                        "My bill is ₹4500 in Mumbai", 
+                        "I have a 1000 sq ft roof in Delhi", 
+                        "What size solar for a ₹2000 bill?"
+                     ].map((suggestion, idx) => (
+                       <button
+                         key={idx}
+                         onClick={() => setPrompt(suggestion)}
+                         className="px-4 py-2 rounded-full bg-transparent border border-slate-200 text-[13px] text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all"
+                       >
+                         {suggestion}
+                       </button>
+                     ))}
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-slate-500 font-medium">Est. ROI</p>
-                  <p className="text-lg font-bold text-goldi-green">{roiYears} Years</p>
-                </div>
               </motion.div>
-            </div>
+            ) : (
+              <div className="flex flex-col gap-10">
+                {messages.map((msg) => (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    key={msg.id} 
+                    className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    {msg.role === 'user' ? (
+                      <div className="bg-slate-100 text-slate-900 px-5 py-3 rounded-[24px] max-w-[85%] text-[15px] font-normal leading-relaxed">
+                        {msg.content}
+                      </div>
+                    ) : (
+                      <div className="flex gap-4 w-full">
+                        <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                          <img src="/favicon.png" alt="Goldi AI" className="w-6 h-6 object-contain" />
+                        </div>
+                        <div className="flex-1 space-y-6 pt-1 min-w-0">
+                          <div className="text-[15px] text-slate-900 font-normal leading-relaxed whitespace-pre-wrap">
+                            {msg.content}
+                          </div>
+                          
+                          {msg.data && msg.data.recommendedKw && (
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 w-full">
+                               <div className="bg-white border border-slate-200 p-3 sm:p-4 rounded-xl flex flex-col justify-center">
+                                 <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                                   <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                                   <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 uppercase tracking-wider line-clamp-1">System Size</span>
+                                 </div>
+                                 <span className="text-lg sm:text-xl font-medium text-slate-900 tracking-tight truncate">{msg.data.recommendedKw} <span className="text-xs sm:text-sm text-slate-500">kW</span></span>
+                               </div>
+                               
+                               <div className="bg-white border border-slate-200 p-3 sm:p-4 rounded-xl flex flex-col justify-center">
+                                 <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                                   <AreaChart className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                                   <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 uppercase tracking-wider line-clamp-1">Roof Space</span>
+                                 </div>
+                                 <span className="text-lg sm:text-xl font-medium text-slate-900 tracking-tight truncate">{msg.data.spaceRequiredSqFt} <span className="text-xs sm:text-sm text-slate-500">sq ft</span></span>
+                               </div>
+                               
+                               <div className="bg-white border border-slate-200 p-3 sm:p-4 rounded-xl flex flex-col justify-center">
+                                 <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                                   <DollarSign className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                   <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 uppercase tracking-wider line-clamp-1">Savings/Yr</span>
+                                 </div>
+                                 <span className="text-lg sm:text-xl font-medium text-slate-900 tracking-tight truncate">₹{msg.data.yearlySavings?.toLocaleString()}</span>
+                               </div>
+                               
+                               <div className="bg-white border border-slate-200 p-3 sm:p-4 rounded-xl flex flex-col justify-center">
+                                 <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                                   <ShieldCheck className="w-3.5 h-3.5 text-green-500 shrink-0" />
+                                   <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 uppercase tracking-wider line-clamp-1">CO2 Red/Yr</span>
+                                 </div>
+                                 <span className="text-lg sm:text-xl font-medium text-slate-900 tracking-tight truncate">{msg.data.co2ReductionTons?.toLocaleString(undefined, { maximumFractionDigits: 1 })} <span className="text-xs sm:text-sm text-slate-500">Tons</span></span>
+                               </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
 
+                {isAiLoading && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex gap-4 w-full"
+                  >
+                    <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                      <img src="/favicon.png" alt="Goldi AI" className="w-6 h-6 object-contain animate-spin" />
+                    </div>
+                  </motion.div>
+                )}
+                <div ref={messagesEndRef} className="h-4" />
+              </div>
+            )}
           </div>
-        </div>
-      </section>
+        </main>
+
+        <AnimatePresence>
+          {hasMessages && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-md pt-4 pb-6 px-4 sm:px-6 z-20 border-t border-slate-100"
+            >
+              <div className="max-w-3xl mx-auto relative group">
+                {/* Outer Glow */}
+                <div className="absolute -inset-[1.5px] rounded-[34px] opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 blur-[8px] overflow-hidden pointer-events-none">
+                  <div className="absolute top-1/2 left-1/2 w-[2000px] h-[2000px] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#4285F4,#EA4335,#FBBC05,#34A853,#4285F4)] animate-[spin_4s_linear_infinite]" />
+                </div>
+                
+                {/* Padding Wrapper for Sharp Border */}
+                <div className="relative w-full rounded-[34px] p-[1.5px] overflow-hidden z-10">
+                  {/* The spinning gradient background */}
+                  <div className="absolute top-1/2 left-1/2 w-[2000px] h-[2000px] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#4285F4,#EA4335,#FBBC05,#34A853,#4285F4)] animate-[spin_4s_linear_infinite] opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                  
+                  <form onSubmit={handleAiSubmit} className="relative z-10 w-full rounded-[32.5px] bg-slate-100 group-focus-within:bg-white transition-all duration-200 flex flex-row items-end px-2 py-2">
+                    <textarea
+                      ref={textareaRef}
+                      value={prompt}
+                      onChange={adjustTextareaHeight}
+                      onKeyDown={handleKeyDown}
+                      placeholder="Ask Goldi Solar"
+                      className="flex-1 bg-transparent px-4 py-3 text-slate-700 placeholder-slate-500 focus:outline-none resize-none overflow-y-auto text-[15px] leading-relaxed self-center max-h-[150px]"
+                      disabled={isAiLoading}
+                      rows={1}
+                      style={{ height: "48px" }}
+                    />
+                    <div className="flex items-center gap-1 shrink-0 mb-1.5">
+                      <button 
+                        type="button" 
+                        onClick={toggleListening}
+                        className={`p-2 rounded-full transition-colors flex ${isListening ? 'text-red-500 bg-red-50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200'}`}
+                      >
+                        <Mic className={`w-5 h-5 ${isListening ? 'animate-pulse' : ''}`} />
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isAiLoading || !prompt.trim()}
+                        className={`p-2 rounded-full transition-colors ${
+                          prompt.trim() 
+                            ? 'bg-[#0A3B73] text-white hover:bg-[#155AA8]' 
+                            : 'bg-slate-200 text-slate-900 hover:bg-slate-300 disabled:opacity-50 disabled:bg-transparent'
+                        }`}
+                      >
+                        {isAiLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowRight className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </PageTransition>
   );
 };
