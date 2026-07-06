@@ -17,6 +17,18 @@ export const SolarCalculator = () => {
   const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isDarkMode, setIsDarkMode] = useState(() => document.body.classList.contains('global-dark'));
+
+  useEffect(() => {
+    const handleEnabled = () => setIsDarkMode(true);
+    const handleDisabled = () => setIsDarkMode(false);
+    window.addEventListener('global-dark-enabled', handleEnabled);
+    window.addEventListener('global-dark-disabled', handleDisabled);
+    return () => {
+      window.removeEventListener('global-dark-enabled', handleEnabled);
+      window.removeEventListener('global-dark-disabled', handleDisabled);
+    };
+  }, []);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -155,7 +167,7 @@ export const SolarCalculator = () => {
 
   return (
     <PageTransition>
-      <div className="flex flex-col h-screen bg-white font-sans selection:bg-slate-100 selection:text-slate-900 relative">
+      <div className={`flex flex-col h-screen font-sans selection:bg-slate-100 selection:text-slate-900 relative transition-colors duration-500 ${isDarkMode ? 'bg-[#050505] text-zinc-100' : 'bg-white text-slate-900'}`}>
         <main className={`flex-1 relative z-10 overflow-y-auto px-4 sm:px-6 pt-24 md:pt-28 ${hasMessages ? 'pb-40' : 'flex items-center justify-center'}`}>
           <div className="max-w-3xl mx-auto w-full">
             
@@ -167,7 +179,7 @@ export const SolarCalculator = () => {
                 className="flex flex-col items-center text-center -mt-32 w-full"
               >
                 <motion.h1 
-                  className="text-4xl sm:text-5xl geist-pixel mb-10 tracking-tight flex items-center justify-center gap-4 text-slate-900"
+                  className={`text-4xl sm:text-5xl geist-pixel mb-10 tracking-tight flex items-center justify-center gap-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
@@ -190,14 +202,20 @@ export const SolarCalculator = () => {
                       {/* The spinning gradient background */}
                       <div className="absolute top-1/2 left-1/2 w-[2000px] h-[2000px] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#4285F4,#EA4335,#FBBC05,#34A853,#4285F4)] animate-[spin_4s_linear_infinite] opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none" />
                       
-                      <form onSubmit={handleAiSubmit} className="relative z-10 w-full rounded-[32.5px] bg-slate-100 group-focus-within:bg-white transition-all duration-200 flex flex-row items-end px-2 py-2">
+                      <form onSubmit={handleAiSubmit} className={`relative z-10 w-full rounded-[32.5px] transition-all duration-200 flex flex-row items-end px-2 py-2 ${
+                        isDarkMode 
+                          ? 'bg-zinc-900 group-focus-within:bg-zinc-900 border border-zinc-800' 
+                          : 'bg-slate-100 group-focus-within:bg-white'
+                      }`}>
                         <textarea
                           ref={textareaRef}
                           value={prompt}
                           onChange={adjustTextareaHeight}
                           onKeyDown={handleKeyDown}
                           placeholder="Ask Goldi Solar"
-                          className="flex-1 bg-transparent px-4 py-3 text-slate-700 placeholder-slate-500 focus:outline-none resize-none overflow-y-auto text-[15px] leading-relaxed self-center max-h-[150px]"
+                          className={`flex-1 bg-transparent px-4 py-3 focus:outline-none resize-none overflow-y-auto text-[15px] leading-relaxed self-center max-h-[150px] ${
+                            isDarkMode ? 'text-zinc-100 placeholder-zinc-500' : 'text-slate-700 placeholder-slate-500'
+                          }`}
                           disabled={isAiLoading}
                           rows={1}
                           style={{ height: "48px" }}
@@ -207,7 +225,13 @@ export const SolarCalculator = () => {
                           <button 
                             type="button" 
                             onClick={toggleListening}
-                            className={`p-2 rounded-full transition-colors flex ${isListening ? 'text-red-500 bg-red-50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200'}`}
+                            className={`p-2 rounded-full transition-colors flex ${
+                              isListening 
+                                ? 'text-red-500 bg-red-50' 
+                                : isDarkMode 
+                                  ? 'text-zinc-400 hover:text-white hover:bg-zinc-800' 
+                                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200'
+                            }`}
                           >
                             <Mic className={`w-5 h-5 ${isListening ? 'animate-pulse' : ''}`} />
                           </button>
@@ -216,8 +240,12 @@ export const SolarCalculator = () => {
                             disabled={isAiLoading || !prompt.trim()}
                             className={`p-2 rounded-full transition-colors ${
                               prompt.trim() 
-                                ? 'bg-[#0A3B73] text-white hover:bg-[#155AA8]' 
-                                : 'bg-slate-200 text-slate-900 hover:bg-slate-300 disabled:opacity-50 disabled:bg-transparent'
+                                ? isDarkMode 
+                                  ? 'bg-[#8CC63F] text-zinc-900 hover:bg-[#a4d955]' 
+                                  : 'bg-[#0A3B73] text-white hover:bg-[#155AA8]' 
+                                : isDarkMode 
+                                  ? 'bg-zinc-800 text-zinc-600 disabled:opacity-50 disabled:bg-transparent' 
+                                  : 'bg-slate-200 text-slate-900 hover:bg-slate-300 disabled:opacity-50 disabled:bg-transparent'
                             }`}
                           >
                             {isAiLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowRight className="w-5 h-5" />}
@@ -235,7 +263,11 @@ export const SolarCalculator = () => {
                        <button
                          key={idx}
                          onClick={() => setPrompt(suggestion)}
-                         className="px-4 py-2 rounded-full bg-transparent border border-slate-200 text-[13px] text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all"
+                         className={`px-4 py-2 rounded-full bg-transparent border text-[13px] transition-all ${
+                           isDarkMode 
+                             ? 'border-zinc-800 text-zinc-400 hover:bg-zinc-900 hover:text-white' 
+                             : 'border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                         }`}
                        >
                          {suggestion}
                        </button>
@@ -253,7 +285,11 @@ export const SolarCalculator = () => {
                     className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     {msg.role === 'user' ? (
-                      <div className="bg-slate-100 text-slate-900 px-5 py-3 rounded-[24px] max-w-[85%] text-[15px] font-normal leading-relaxed">
+                      <div className={`px-5 py-3 rounded-[24px] max-w-[85%] text-[15px] font-normal leading-relaxed ${
+                        isDarkMode 
+                          ? 'bg-zinc-800 text-zinc-100 border border-zinc-700/50' 
+                          : 'bg-slate-100 text-slate-900'
+                      }`}>
                         {msg.content}
                       </div>
                     ) : (
@@ -261,43 +297,75 @@ export const SolarCalculator = () => {
                         <div className="w-8 h-8 flex items-center justify-center shrink-0">
                           <img src="/favicon.png" alt="Goldi AI" className="w-6 h-6 object-contain" />
                         </div>
-                        <div className="flex-1 space-y-6 pt-1 min-w-0">
-                          <div className="text-[15px] text-slate-900 font-normal leading-relaxed whitespace-pre-wrap">
+                        <div className="flex-grow flex-1 space-y-6 pt-1 min-w-0">
+                          <div className={`text-[15px] font-normal leading-relaxed whitespace-pre-wrap ${
+                            isDarkMode ? 'text-zinc-100' : 'text-slate-900'
+                          }`}>
                             {msg.content}
                           </div>
                           
                           {msg.data && msg.data.recommendedKw && (
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 w-full">
-                               <div className="bg-white border border-slate-200 p-3 sm:p-4 rounded-xl flex flex-col justify-center">
+                               <div className={`p-3 sm:p-4 rounded-xl flex flex-col justify-center border transition-colors duration-200 ${
+                                 isDarkMode ? 'bg-zinc-900/50 border-zinc-800' : 'bg-white border-slate-200'
+                               }`}>
                                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
                                    <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                                   <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 uppercase tracking-wider line-clamp-1">System Size</span>
+                                   <span className={`text-[10px] sm:text-[11px] font-medium uppercase tracking-wider line-clamp-1 ${
+                                     isDarkMode ? 'text-zinc-400' : 'text-slate-500'
+                                   }`}>System Size</span>
                                  </div>
-                                 <span className="text-lg sm:text-xl font-medium text-slate-900 tracking-tight truncate">{msg.data.recommendedKw} <span className="text-xs sm:text-sm text-slate-500">kW</span></span>
+                                 <span className={`text-lg sm:text-xl font-medium tracking-tight truncate ${
+                                   isDarkMode ? 'text-white' : 'text-slate-900'
+                                 }`}>{msg.data.recommendedKw} <span className={`text-xs sm:text-sm ${
+                                   isDarkMode ? 'text-zinc-400' : 'text-slate-500'
+                                 }`}>kW</span></span>
                                </div>
                                
-                               <div className="bg-white border border-slate-200 p-3 sm:p-4 rounded-xl flex flex-col justify-center">
+                               <div className={`p-3 sm:p-4 rounded-xl flex flex-col justify-center border transition-colors duration-200 ${
+                                 isDarkMode ? 'bg-zinc-900/50 border-zinc-800' : 'bg-white border-slate-200'
+                               }`}>
                                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
                                    <AreaChart className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                                   <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 uppercase tracking-wider line-clamp-1">Roof Space</span>
+                                   <span className={`text-[10px] sm:text-[11px] font-medium uppercase tracking-wider line-clamp-1 ${
+                                     isDarkMode ? 'text-zinc-400' : 'text-slate-500'
+                                   }`}>Roof Space</span>
                                  </div>
-                                 <span className="text-lg sm:text-xl font-medium text-slate-900 tracking-tight truncate">{msg.data.spaceRequiredSqFt} <span className="text-xs sm:text-sm text-slate-500">sq ft</span></span>
+                                 <span className={`text-lg sm:text-xl font-medium tracking-tight truncate ${
+                                   isDarkMode ? 'text-white' : 'text-slate-900'
+                                 }`}>{msg.data.spaceRequiredSqFt} <span className={`text-xs sm:text-sm ${
+                                   isDarkMode ? 'text-zinc-400' : 'text-slate-500'
+                                 }`}>sq ft</span></span>
                                </div>
                                
-                               <div className="bg-white border border-slate-200 p-3 sm:p-4 rounded-xl flex flex-col justify-center">
+                               <div className={`p-3 sm:p-4 rounded-xl flex flex-col justify-center border transition-colors duration-200 ${
+                                 isDarkMode ? 'bg-zinc-900/50 border-zinc-800' : 'bg-white border-slate-200'
+                               }`}>
                                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
                                    <DollarSign className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                                   <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 uppercase tracking-wider line-clamp-1">Savings/Yr</span>
+                                   <span className={`text-[10px] sm:text-[11px] font-medium uppercase tracking-wider line-clamp-1 ${
+                                     isDarkMode ? 'text-zinc-400' : 'text-slate-500'
+                                   }`}>Savings/Yr</span>
                                  </div>
-                                 <span className="text-lg sm:text-xl font-medium text-slate-900 tracking-tight truncate">₹{msg.data.yearlySavings?.toLocaleString()}</span>
+                                 <span className={`text-lg sm:text-xl font-medium tracking-tight truncate ${
+                                   isDarkMode ? 'text-white' : 'text-slate-900'
+                                 }`}>₹{msg.data.yearlySavings?.toLocaleString()}</span>
                                </div>
                                
-                               <div className="bg-white border border-slate-200 p-3 sm:p-4 rounded-xl flex flex-col justify-center">
+                               <div className={`p-3 sm:p-4 rounded-xl flex flex-col justify-center border transition-colors duration-200 ${
+                                 isDarkMode ? 'bg-zinc-900/50 border-zinc-800' : 'bg-white border-slate-200'
+                               }`}>
                                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
                                    <ShieldCheck className="w-3.5 h-3.5 text-green-500 shrink-0" />
-                                   <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 uppercase tracking-wider line-clamp-1">CO2 Red/Yr</span>
+                                   <span className={`text-[10px] sm:text-[11px] font-medium uppercase tracking-wider line-clamp-1 ${
+                                     isDarkMode ? 'text-zinc-400' : 'text-slate-500'
+                                   }`}>CO2 Red/Yr</span>
                                  </div>
-                                 <span className="text-lg sm:text-xl font-medium text-slate-900 tracking-tight truncate">{msg.data.co2ReductionTons?.toLocaleString(undefined, { maximumFractionDigits: 1 })} <span className="text-xs sm:text-sm text-slate-500">Tons</span></span>
+                                 <span className={`text-lg sm:text-xl font-medium tracking-tight truncate ${
+                                   isDarkMode ? 'text-white' : 'text-slate-900'
+                                 }`}>{msg.data.co2ReductionTons?.toLocaleString(undefined, { maximumFractionDigits: 1 })} <span className={`text-xs sm:text-sm ${
+                                   isDarkMode ? 'text-zinc-400' : 'text-slate-500'
+                                 }`}>Tons</span></span>
                                </div>
                             </div>
                           )}
@@ -329,7 +397,11 @@ export const SolarCalculator = () => {
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-md pt-4 pb-6 px-4 sm:px-6 z-20 border-t border-slate-100"
+              className={`fixed bottom-0 left-0 w-full backdrop-blur-md pt-4 pb-6 px-4 sm:px-6 z-20 border-t transition-colors duration-300 ${
+                isDarkMode 
+                  ? 'bg-[#050505]/90 border-zinc-900 text-zinc-100' 
+                  : 'bg-white/90 border-slate-100 text-slate-900'
+              }`}
             >
               <div className="max-w-3xl mx-auto relative group">
                 {/* Outer Glow */}
@@ -342,14 +414,20 @@ export const SolarCalculator = () => {
                   {/* The spinning gradient background */}
                   <div className="absolute top-1/2 left-1/2 w-[2000px] h-[2000px] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#4285F4,#EA4335,#FBBC05,#34A853,#4285F4)] animate-[spin_4s_linear_infinite] opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none" />
                   
-                  <form onSubmit={handleAiSubmit} className="relative z-10 w-full rounded-[32.5px] bg-slate-100 group-focus-within:bg-white transition-all duration-200 flex flex-row items-end px-2 py-2">
+                  <form onSubmit={handleAiSubmit} className={`relative z-10 w-full rounded-[32.5px] transition-all duration-200 flex flex-row items-end px-2 py-2 ${
+                    isDarkMode 
+                      ? 'bg-zinc-900 group-focus-within:bg-zinc-900 border border-zinc-800' 
+                      : 'bg-slate-100 group-focus-within:bg-white'
+                  }`}>
                     <textarea
                       ref={textareaRef}
                       value={prompt}
                       onChange={adjustTextareaHeight}
                       onKeyDown={handleKeyDown}
                       placeholder="Ask Goldi Solar"
-                      className="flex-1 bg-transparent px-4 py-3 text-slate-700 placeholder-slate-500 focus:outline-none resize-none overflow-y-auto text-[15px] leading-relaxed self-center max-h-[150px]"
+                      className={`flex-1 bg-transparent px-4 py-3 focus:outline-none resize-none overflow-y-auto text-[15px] leading-relaxed self-center max-h-[150px] ${
+                        isDarkMode ? 'text-zinc-100 placeholder-zinc-500' : 'text-slate-700 placeholder-slate-500'
+                      }`}
                       disabled={isAiLoading}
                       rows={1}
                       style={{ height: "48px" }}
@@ -358,7 +436,13 @@ export const SolarCalculator = () => {
                       <button 
                         type="button" 
                         onClick={toggleListening}
-                        className={`p-2 rounded-full transition-colors flex ${isListening ? 'text-red-500 bg-red-50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200'}`}
+                        className={`p-2 rounded-full transition-colors flex ${
+                          isListening 
+                            ? 'text-red-500 bg-red-50' 
+                            : isDarkMode 
+                              ? 'text-zinc-400 hover:text-white hover:bg-zinc-800' 
+                              : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200'
+                        }`}
                       >
                         <Mic className={`w-5 h-5 ${isListening ? 'animate-pulse' : ''}`} />
                       </button>
@@ -367,8 +451,12 @@ export const SolarCalculator = () => {
                         disabled={isAiLoading || !prompt.trim()}
                         className={`p-2 rounded-full transition-colors ${
                           prompt.trim() 
-                            ? 'bg-[#0A3B73] text-white hover:bg-[#155AA8]' 
-                            : 'bg-slate-200 text-slate-900 hover:bg-slate-300 disabled:opacity-50 disabled:bg-transparent'
+                            ? isDarkMode 
+                              ? 'bg-[#8CC63F] text-zinc-900 hover:bg-[#a4d955]' 
+                              : 'bg-[#0A3B73] text-white hover:bg-[#155AA8]' 
+                            : isDarkMode 
+                              ? 'bg-zinc-800 text-zinc-600 disabled:opacity-50 disabled:bg-transparent' 
+                              : 'bg-slate-200 text-slate-900 hover:bg-slate-300 disabled:opacity-50 disabled:bg-transparent'
                         }`}
                       >
                         {isAiLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowRight className="w-5 h-5" />}

@@ -52,6 +52,7 @@ import { HelocPro } from "./pages/HelocPro";
 import { HelocPlus } from "./pages/HelocPlus";
 import { ModuleShowcase } from "./pages/ModuleShowcase";
 import { ExploreModules } from "./pages/ExploreModules";
+import { AdminDashboard } from "./pages/AdminDashboard";
 import { GlobalPresenceGlobe } from "./components/GlobalPresenceGlobe";
 
 // --- Shared Components ---
@@ -1681,6 +1682,7 @@ export default function App() {
               <Route path="/explore-modules" element={<ExploreModules />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/admin" element={<AdminDashboard />} />
             </Routes>
           </AnimatePresence>
         </main>

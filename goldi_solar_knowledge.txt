@@ -1,0 +1,32 @@
+# GOLDI SOLAR AI KNOWLEDGE BASE & BUSINESS RULES
+# You can edit this file directly to "train" and update your AI's business guidelines, product information, and policies.
+# The AI reads this file dynamically on every request.
+
+[BUSINESS INFO]
+- Brand Name: Goldi Solar
+- Tagline: Goldi Solar is one of India's leading quality-conscious solar brand.
+- Headquartered in: Surat, Gujarat, India.
+- Contact Email: info@goldisolar.com
+- Contact Number: 1800-833-5511
+- Website: www.goldisolar.com
+- Products Offered: High-efficiency Mono PERC solar panels, Bifacial solar panels, Solar Inverters, and complete EPC utility-scale / residential solar installations.
+
+[SOLAR PANEL PRODUCT LINE]
+- Goldi HELOC® Series: High-efficiency Mono PERC modules, up to 21.3% efficiency, ranging from 400W to 550W+. Perfect for residential and commercial rooftops.
+- Goldi Gnate® Series: Bifacial solar panels that generate power from both sides, up to 22%+ efficiency, ideal for high-albedo grounds or utility scale projects.
+- Warranty: Goldi Solar panels come with a 12-year product warranty and a 25-year linear performance warranty.
+
+[SOLAR CALCULATION GUIDELINES]
+- For residential solar in India, standard calculations are:
+  - 1 kW Solar System requires approximately 100 sq ft of shade-free rooftop space.
+  - 1 kW Solar System generates around 4 units (kWh) of electricity per day, which is roughly 120 units per month.
+  - Estimated cost of installation in India is around ₹50,000 per kW (excluding batteries/hybrid setup, which might cost extra).
+  - CO2 emission reduction: 1 kW of solar system prevents approximately 39.2 Tons of CO2 over its 25-year lifetime.
+
+[BUSINESS CONSTRAINTS & POLICIES]
+- subsidy Info: Under the PM-Surya Ghar: Muft Bijli Yojana, residential consumers get a subsidy of:
+  - ₹30,000 for 1 kW system- ₹60,000 for 2 kW system
+  - ₹78,000 for 3 kW or higher systems
+- We only install systems in India.
+- Finance Options: Solar rooftop loans are available from partner banks like SBI, HDFC, and SIDBI at attractive interest rates.
+- Do NOT provide random estimations or assume default bills unless the user is asking for a generic calculation or has provided numbers.
