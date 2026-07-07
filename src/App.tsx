@@ -118,7 +118,7 @@ const Navbar = () => {
       ]
     },
     { name: "EPC Solutions", path: "/epc" },
-    { name: "Calculator", path: "/calculator" },
+    { name: "Goldi AI", path: "/goldi-ai" },
     { name: "About Us", path: "/about" },
   ];
 
@@ -155,7 +155,7 @@ const Navbar = () => {
     ? "bg-white/10 text-white border-white/20 hover:bg-white hover:text-black shadow-[0_0_15px_rgba(255,255,255,0.05)] hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]" 
     : "bg-goldi-blue/10 text-goldi-blue border border-goldi-blue/30 hover:bg-goldi-blue hover:text-white shadow-[0_0_15px_rgba(140,198,63,0.1)] hover:shadow-[0_0_20px_rgba(140,198,63,0.3)]";
 
-  if (location.pathname === "/calculator") {
+  if (location.pathname === "/goldi-ai") {
     return (
       <header ref={menuRef}>
         <div className="fixed top-6 right-6 z-[100] flex items-center justify-end">
@@ -405,7 +405,7 @@ const Footer = () => {
     }
   }, []);
 
-  if (location.pathname === '/calculator') return null;
+  if (location.pathname === '/goldi-ai') return null;
 
   const isDarkMode = isGlobalDark || ['/heloc-pro', '/heloc-plus', '/module-anatomy', '/explore-modules'].includes(location.pathname);
 
@@ -1675,7 +1675,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/epc" element={<EPC />} />
-              <Route path="/calculator" element={<SolarCalculator />} />
+              <Route path="/goldi-ai" element={<SolarCalculator />} />
               <Route path="/heloc-pro" element={<HelocPro />} />
               <Route path="/heloc-plus" element={<HelocPlus />} />
               <Route path="/module-anatomy" element={<ModuleShowcase />} />

@@ -5,6 +5,9 @@ import OpenAI from "openai";
 import dotenv from "dotenv";
 import fs from "fs";
 import axios from "axios";
+import multer from "multer";
+
+let pdfParse: any;
 
 dotenv.config();
 
@@ -54,10 +57,16 @@ async function startServer() {
   // API Routes
   app.post("/api/solar-ai", async (req, res) => {
     try {
-      const { prompt } = req.body;
+      const { prompt, messages = [] } = req.body;
       if (!prompt) {
         return res.status(400).json({ error: "Prompt is required" });
       }
+
+      // Format previous context
+      const chatContext = Array.isArray(messages) 
+        ? messages.map(m => ({ role: m.role, content: m.content })) 
+        : [{ role: "user", content: prompt }];
+
 
       // Read dynamic business guidelines from goldi_solar_knowledge.txt
       let knowledgeBase = "";
@@ -126,6 +135,20 @@ Return ONLY a valid JSON object matching this schema. Do not include any markdow
         }
       }
 
+      // Quick local override: if we found a bill, area, or units, it is definitely a calculation query
+      if (extractedData.extractedBill || extractedData.extractedArea || extractedData.estimatedUnits) {
+        extractedData.queryType = "calculation";
+      }
+      
+      // Also fallback regex check if still no bill found
+      if (!extractedData.extractedBill) {
+        const fallbackMatch = prompt.match(/(?:bill|rupees|rs\.?|inr|₹)\s*(\d+[\d,]*)/i) || prompt.match(/(\d+[\d,]*)\s*(?:bill|rupees|rs\.?|inr|₹)/i) || prompt.match(/^(\d{3,5})\s*$/);
+        if (fallbackMatch) {
+          extractedData.extractedBill = parseInt(fallbackMatch[1].replace(/,/g, ""), 10);
+          extractedData.queryType = "calculation";
+        }
+      }
+
       // Quick local override for common simple greetings to make sure they are categorized correctly
       const lowerPrompt = prompt.toLowerCase().trim();
       const hasNumber = /\d+/.test(lowerPrompt);
@@ -164,10 +187,10 @@ ${knowledgeBase || "Goldi Solar is a leading quality-conscious solar brand in In
 
 Your task:
 1. Respond to their greeting in a short, polite, and helpful manner.
-2. CRITICAL RULE: If the detectedLanguage is "English" or the user's input is a simple greeting (like "hi", "hello", "hey", "hy", "hlw", "hlo", etc.), you MUST reply in pure, friendly English, introducing yourself as the Goldi Solar AI Assistant and asking how you can help them (e.g., "Hello! I am your Goldi Solar AI Assistant. How can I help you today?"). You MUST stop at asking "How can I help you today?". Do NOT ask them to share their monthly electricity bill, units, or location in this greeting. Do NOT mix any Hindi, Hinglish, or Devanagari words.
-3. If the detectedLanguage is "Hindi" or "Hinglish" or the user greeted in Hindi/Hinglish (like "namaste", "kaise ho", etc.), reply in natural Hinglish (using Latin script), introduce yourself as Goldi Solar's AI assistant, and ask how you can help them (e.g., "Namaste! Main Goldi Solar ka AI Assistant hoon. Aaj main aapki kya sahayata kar sakta hoon?"), and stop there. Do NOT ask for bills or locations yet.
-4. If the detectedLanguage is "Gujarati", reply 100% in beautiful, polite, and proper Gujarati script (ગુજરાતી લિપિ) introducing yourself as Goldi Solar's AI assistant, and ask how you can help them (e.g., "નમસ્તે! હું ગોલ્ડી સોલારનો AI આસિસ્ટન્ટ છું. આજે હું તમારી શું મદદ કરી શકું?"), and stop there. Do NOT write in Latin/English alphabets or mix Hindi words.
-5. Keep the message natural, friendly, and EXTREMELY concise (maximum 1-2 sentences). Do not mention any numbers or assume any bill.`;
+2. CRITICAL RULE: If the detectedLanguage is "English" or the user's input is a simple greeting (like "hi", "hello", "hey", "hy", "hlw", "hlo", etc.), you MUST reply in pure, friendly English, introducing yourself as the Goldi AI Assistant and asking how you can help them (e.g., "Hello! I am your Goldi AI Assistant. How can I help you today?"). You MUST stop at asking "How can I help you today?". Do NOT ask them to share their monthly electricity bill, units, or location in this greeting. Do NOT mix any Hindi, Hinglish, or Devanagari words.
+3. If the detectedLanguage is "Hindi" or "Hinglish" or the user greeted in Hindi/Hinglish (like "namaste", "kaise ho", etc.), reply in natural Hinglish (using Latin script), introduce yourself as Goldi AI Assistant, and ask how you can help them (e.g., "Namaste! Main Goldi AI Assistant hoon. Aaj main aapki kya sahayata kar sakta hoon?"), and stop there. Do NOT ask for bills or locations yet.
+4. If the detectedLanguage is "Gujarati", reply 100% in beautiful, polite, and proper Gujarati script (ગુજરાતી લિપિ) introducing yourself as Goldi AI Assistant, and ask how you can help them (e.g., "નમસ્તે! હું ગોલ્ડી AI આસિસ્ટન્ટ છું. આજે હું તમારી શું મદદ કરી શકું?"), and stop there. Do NOT write in Latin/English alphabets or mix Hindi words.
+5. Keep the message natural, friendly, and EXTREMELY concise (maximum 1-2 sentences). Format your response to have a blank line (\n\n) between the introduction and the question. Do not mention any numbers or assume any bill.`;
 
         let greetingResponse = "";
         try {
@@ -175,7 +198,7 @@ Your task:
             model: "meta/llama-3.1-8b-instruct",
             messages: [
               { "role": "system", "content": greetingPrompt },
-              { "role": "user", "content": prompt }
+              ...chatContext
             ],
             temperature: 0.5,
             max_tokens: 256,
@@ -183,7 +206,7 @@ Your task:
           });
           greetingResponse = greetingCompletion.choices[0]?.message?.content || "";
         } catch (err) {
-          greetingResponse = "Hello! I am your Goldi Solar AI Assistant. How can I help you today?";
+          greetingResponse = "Hello! I am your Goldi AI Assistant. How can I help you today?";
         }
 
         return res.json({
@@ -214,9 +237,11 @@ Your task:
    - If detectedLanguage is "English", you MUST answer 100% in pure English. Do NOT mix any Hindi, Hinglish, or Devanagari words.
    - If detectedLanguage is "Hindi" or "Hinglish", answer in natural Hinglish (using Latin script).
    - If detectedLanguage is "Gujarati", you MUST reply 100% in proper, grammatically correct Gujarati script (ગુજરાતી લિપિ). Do NOT write Gujarati using Latin/English letters, and do NOT mix Hindi words.
-3. Do NOT assume any default bill amount, or perform any personalized calculations. Do not mention default numbers (like 2000 bill, 2.5 kW, etc.).
-4. End your response by nicely suggesting that if they want a personalized solar system size and savings estimate, they can share their monthly electricity bill (in ₹) or units consumed (in kWh). Also include a short Call To Action to contact us (e.g., call 1800-123-GOLDI).
-5. Keep the response natural, professional, and EXTREMELY concise (maximum 3-4 sentences, strictly under 60 words).`;
+3. If the user asks about products or solar modules, recommend the appropriate Goldi Solar products from the knowledge base (e.g., HELOC® or Gnate® Series) and include a link to our internal explore modules page (e.g., "Explore our modules here: [/explore-modules](/explore-modules)").
+4. Do NOT assume any default bill amount, or perform any personalized calculations. Do not mention default numbers (like 2000 bill, 2.5 kW, etc.).
+5. End your response by nicely suggesting that if they want a personalized solar system size and savings estimate, they can share their monthly electricity bill (in ₹) or units consumed (in kWh).
+6. Keep the response natural, professional, and concise. Format your response into distinct, short lines/paragraphs separated by a blank line (\n\n) to make it highly readable.
+7. Also include a short Call To Action to contact us (e.g., "Contact us to get started: [1800-833-5511](tel:18008335511)") as the final line.`;
 
         let infoResponse = "";
         try {
@@ -224,7 +249,7 @@ Your task:
             model: "meta/llama-3.1-8b-instruct",
             messages: [
               { "role": "system", "content": infoPrompt },
-              { "role": "user", "content": prompt }
+              ...chatContext
             ],
             temperature: 0.4,
             max_tokens: 512,
@@ -279,7 +304,7 @@ Your task:
             model: "meta/llama-3.1-8b-instruct",
             messages: [
               { "role": "system", "content": askForDetailsPrompt },
-              { "role": "user", "content": prompt }
+              ...chatContext
             ],
             temperature: 0.4,
             max_tokens: 256,
@@ -344,16 +369,18 @@ We have calculated the mathematically precise solar estimation results for them 
 - Lifetime CO2 Emission Reduction: ${co2ReductionTons} Tons
 - Location: ${extractedData.extractedLocation || "India"}
 
-Your task is to write a VERY SHORT, concise, and friendly response message (maximum 2-3 sentences).
+Your task is to write an ULTRA-SHORT and friendly response (maximum 1 to 2 sentences).
+
 CRITICAL RULES:
 1. You MUST write this message in the language specified as detectedLanguage: "${extractedData.detectedLanguage}".
    - If detectedLanguage is "English", you MUST answer 100% in pure English. Do NOT mix any Hindi, Hinglish, or Devanagari words.
    - If detectedLanguage is "Hindi" or "Hinglish", reply in natural Hinglish (using Latin script).
    - If detectedLanguage is "Gujarati", you MUST reply 100% in proper, grammatically correct Gujarati script (ગુજરાતી લિપિ). Do NOT write Gujarati using Latin/English characters. Do NOT mix Hindi or Hinglish words in the Gujarati response. Make it sound native and professional.
 2. DO NOT change or alter any of the calculated numbers above. Use them exactly as provided.
-3. Keep the message EXTREMELY concise. The numerical details (kW, savings, cost) will be displayed to the user in a separate dashboard card, so you only need to provide a high-level one-sentence or two-sentence summary. Do not write a long letter. Do not include signature blocks like "Best regards, Goldi Solar Team". Do not repeat all the numbers.
-4. ALWAYS include a brief Call to Action (CTA) at the end, such as "Contact us at 1800-123-GOLDI to get started!" or "Reach out today to book an assessment!".
-5. Do not return JSON. Just return the plain text response message.`;
+3. Maximum 1 or 2 sentences total before the CTA. Do NOT explain the numbers, do NOT mention the environment or CO2, and do NOT repeat the dashboard stats. Just write a quick encouraging summary like "A solar system can significantly reduce your electricity bills!".
+4. Format your response into a single cohesive paragraph. Do not use excessive blank lines.
+5. ALWAYS include a brief Call to Action (CTA) at the end, formatted EXACTLY as a markdown link like this: "Contact us to get started: [1800-833-5511](tel:18008335511)".
+6. Do not return JSON. Just return the plain text response message.`;
 
       let responseMessage = "";
       try {
@@ -361,7 +388,7 @@ CRITICAL RULES:
           model: "meta/llama-3.1-8b-instruct",
           messages: [
             { "role": "system", "content": messageSystemPrompt },
-            { "role": "user", "content": prompt }
+            ...chatContext
           ],
           temperature: 0.3,
           max_tokens: 512,
@@ -503,6 +530,62 @@ CRITICAL RULES:
     }
     return Array.from(new Set(links));
   };
+
+  const upload = multer({ 
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 50 * 1024 * 1024 } // 50MB
+  });
+
+  app.post("/api/admin/parse-pdf", verifyAdmin, (req, res) => {
+    upload.single("pdf")(req, res, async (err) => {
+      if (err) {
+        console.error("Multer upload error:", err);
+        return res.status(400).json({ error: err.message || "Failed to upload file." });
+      }
+      try {
+        if (!req.file) {
+          return res.status(400).json({ error: "No PDF file provided." });
+        }
+
+        const mod = await import("pdf-parse");
+        const PDFParse = mod.PDFParse;
+        const parser = new PDFParse({ data: req.file.buffer });
+        const pdfData = await parser.getText();
+        const text = pdfData.text;
+
+        if (!text || !text.trim()) {
+          return res.status(400).json({ error: "Could not extract text from the PDF." });
+        }
+
+        console.log(`Extracted ${text.length} characters from PDF. Sending to AI for summarization...`);
+
+        const pagePrompt = `Extract key business guidelines, product details, solar panels information, prices, contact details, policies, and solar specifications from this PDF content:
+
+Text:
+"${text.substring(0, 10000)}"
+
+Task: Return a concise, high-quality list of bullet points detailing the key facts. Be completely factual. Do NOT add conversational preambles.`;
+        
+        const comp = await openai.chat.completions.create({
+          model: "meta/llama-3.1-8b-instruct",
+          messages: [
+            { "role": "system", "content": "You are a professional factual extraction agent. Return only bullet points of facts or nothing. No chatty introductions." },
+            { "role": "user", "content": pagePrompt }
+          ],
+          temperature: 0.1,
+          max_tokens: 500,
+          stream: false
+        });
+
+        const extractedContent = comp.choices[0]?.message?.content?.trim() || "No content extracted by AI.";
+        res.json({ extractedContent });
+
+      } catch (err: any) {
+        console.error("PDF parsing failed:", err);
+        res.status(500).json({ error: err.message || "Failed to parse PDF file." });
+      }
+    });
+  });
 
   // Scrape and extract text/facts from a URL (single or multi-page entire website)
   app.post("/api/admin/scrape-website", verifyAdmin, async (req, res) => {

@@ -1,13 +1,111 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { PageTransition } from '../App';
-import { Send, Loader2, Sparkles, Plus, Search, Monitor, ChevronDown, Mic, Zap, AreaChart, DollarSign, ShieldCheck, ArrowRight } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { AreaChart as RechartsAreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Send, Loader2, Sparkles, Plus, Search, Monitor, ChevronDown, Mic, Zap, AreaChart, DollarSign, ShieldCheck, ArrowRight, Phone, TrendingUp, User, ArrowRightCircle, CheckCircle2 } from 'lucide-react';
 
 type Message = {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   data?: any;
+};
+
+const SavingsChart = ({ yearlySavings, isDarkMode }: { yearlySavings: number, isDarkMode: boolean }) => {
+  const data = Array.from({ length: 10 }, (_, i) => ({
+    year: `Year ${i + 1}`,
+    savings: (yearlySavings * (i + 1))
+  }));
+
+  return (
+    <div className={`mt-4 p-4 sm:p-5 rounded-2xl border ${isDarkMode ? 'bg-zinc-900/50 border-zinc-800' : 'bg-white border-slate-200'}`}>
+      <div className="flex items-center gap-2 mb-4">
+        <TrendingUp className="w-4 h-4 text-emerald-500" />
+        <h4 className={`text-sm font-semibold ${isDarkMode ? 'text-zinc-100' : 'text-slate-900'}`}>10-Year Savings Projection</h4>
+      </div>
+      <div className="h-48 w-full">
+        <ResponsiveContainer width="100%" height="100%" className="focus:outline-none">
+          <RechartsAreaChart data={data} margin={{ top: 5, right: 0, left: 0, bottom: 0 }} style={{ outline: 'none' }}>
+            <defs>
+              <linearGradient id="colorSavings" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#27272a' : '#e2e8f0'} />
+            <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: isDarkMode ? '#a1a1aa' : '#64748b' }} />
+            <YAxis axisLine={false} tickLine={false} tickFormatter={(val) => `₹${(val/100000).toFixed(1)}L`} tick={{ fontSize: 10, fill: isDarkMode ? '#a1a1aa' : '#64748b' }} width={45} />
+            <Tooltip 
+              contentStyle={{ backgroundColor: isDarkMode ? '#18181b' : '#ffffff', borderColor: isDarkMode ? '#27272a' : '#e2e8f0', borderRadius: '8px' }}
+              itemStyle={{ color: '#10b981', fontWeight: 500 }}
+              labelStyle={{ color: isDarkMode ? '#a1a1aa' : '#64748b', marginBottom: '4px' }}
+              formatter={(value: any) => [`₹${value.toLocaleString('en-IN')}`, 'Total Savings']}
+            />
+            <Area type="monotone" dataKey="savings" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorSavings)" />
+          </RechartsAreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+};
+
+const LeadCapture = ({ isDarkMode }: { isDarkMode: boolean }) => {
+  const [submitted, setSubmitted] = useState(false);
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+
+  if (submitted) {
+    return (
+      <div className={`mt-4 p-4 rounded-xl border flex items-center gap-3 ${isDarkMode ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
+        <CheckCircle2 className="w-5 h-5" />
+        <span className="text-sm font-medium">Thank you! Our solar expert will contact you shortly.</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`mt-4 p-4 sm:p-5 rounded-2xl border ${isDarkMode ? 'bg-[#050505] border-zinc-800' : 'bg-slate-50 border-slate-200'}`}>
+      <h4 className={`text-[15px] font-semibold mb-1 ${isDarkMode ? 'text-zinc-100' : 'text-slate-900'}`}>Would you like our team to contact you?</h4>
+      <p className={`text-xs mb-4 ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>Get a free precise quotation.</p>
+      
+      <form onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }} className="space-y-3">
+        <div className="relative">
+          <User className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`} />
+          <input 
+            type="text" 
+            required 
+            placeholder="Your Name" 
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className={`w-full pl-9 pr-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-1 focus:border-transparent ${
+              isDarkMode ? 'bg-zinc-900 border-zinc-700 text-white focus:ring-goldi-blue' : 'bg-white border-slate-300 text-slate-900 focus:ring-goldi-blue'
+            }`}
+          />
+        </div>
+        <div className="relative">
+          <Phone className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`} />
+          <input 
+            type="tel" 
+            required 
+            placeholder="Phone Number" 
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className={`w-full pl-9 pr-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-1 focus:border-transparent ${
+              isDarkMode ? 'bg-zinc-900 border-zinc-700 text-white focus:ring-goldi-blue' : 'bg-white border-slate-300 text-slate-900 focus:ring-goldi-blue'
+            }`}
+          />
+        </div>
+        <button 
+          type="submit" 
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-goldi-blue hover:bg-[#0A3B73] text-white text-sm font-medium transition-colors"
+        >
+          Request Callback <ArrowRightCircle className="w-4 h-4" />
+        </button>
+      </form>
+    </div>
+  );
 };
 
 export const SolarCalculator = () => {
@@ -112,10 +210,12 @@ export const SolarCalculator = () => {
     setIsAiLoading(true);
 
     try {
+      const chatHistory = [...messages, userMessage].map(m => ({ role: m.role, content: m.content }));
+      
       const response = await fetch("/api/solar-ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: userMessage.content }),
+        body: JSON.stringify({ prompt: userMessage.content, messages: chatHistory }),
       });
 
       let data;
@@ -193,26 +293,26 @@ export const SolarCalculator = () => {
                 <div className="w-full">
                   <div className="w-full relative group">
                     {/* Outer Glow */}
-                    <div className="absolute -inset-[1.5px] rounded-[34px] opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 blur-[8px] overflow-hidden pointer-events-none">
+                    <div className="absolute -inset-[1.5px] rounded-[34px] opacity-100 transition-opacity duration-500 blur-[8px] overflow-hidden pointer-events-none">
                       <div className="absolute top-1/2 left-1/2 w-[2000px] h-[2000px] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#4285F4,#EA4335,#FBBC05,#34A853,#4285F4)] animate-[spin_4s_linear_infinite]" />
                     </div>
                     
                     {/* Padding Wrapper for Sharp Border */}
                     <div className="relative w-full rounded-[34px] p-[1.5px] overflow-hidden z-10">
                       {/* The spinning gradient background */}
-                      <div className="absolute top-1/2 left-1/2 w-[2000px] h-[2000px] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#4285F4,#EA4335,#FBBC05,#34A853,#4285F4)] animate-[spin_4s_linear_infinite] opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                      <div className="absolute top-1/2 left-1/2 w-[2000px] h-[2000px] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#4285F4,#EA4335,#FBBC05,#34A853,#4285F4)] animate-[spin_4s_linear_infinite] opacity-100 transition-opacity duration-500 pointer-events-none" />
                       
                       <form onSubmit={handleAiSubmit} className={`relative z-10 w-full rounded-[32.5px] transition-all duration-200 flex flex-row items-end px-2 py-2 ${
                         isDarkMode 
-                          ? 'bg-zinc-900 group-focus-within:bg-zinc-900 border border-zinc-800' 
-                          : 'bg-slate-100 group-focus-within:bg-white'
+                          ? 'bg-zinc-900 border border-zinc-800' 
+                          : 'bg-white shadow-sm'
                       }`}>
                         <textarea
                           ref={textareaRef}
                           value={prompt}
                           onChange={adjustTextareaHeight}
                           onKeyDown={handleKeyDown}
-                          placeholder="Ask Goldi Solar"
+                          placeholder="Ask Goldi AI"
                           className={`flex-1 bg-transparent px-4 py-3 focus:outline-none resize-none overflow-y-auto text-[15px] leading-relaxed self-center max-h-[150px] ${
                             isDarkMode ? 'text-zinc-100 placeholder-zinc-500' : 'text-slate-700 placeholder-slate-500'
                           }`}
@@ -256,9 +356,9 @@ export const SolarCalculator = () => {
                   </div>
                   <div className="flex flex-wrap justify-center gap-2 mt-6">
                      {[
-                        "My bill is ₹4500 in Mumbai", 
-                        "I have a 1000 sq ft roof in Delhi", 
-                        "What size solar for a ₹2000 bill?"
+                        "My bill is ₹3000", 
+                        "Gujarat subsidy details", 
+                        "Best solar panel for home"
                      ].map((suggestion, idx) => (
                        <button
                          key={idx}
@@ -301,10 +401,49 @@ export const SolarCalculator = () => {
                           <div className={`text-[15px] font-normal leading-relaxed whitespace-pre-wrap ${
                             isDarkMode ? 'text-zinc-100' : 'text-slate-900'
                           }`}>
-                            {msg.content}
+                            <div className="markdown-body">
+                              <ReactMarkdown
+                                components={{
+                                  strong: ({node, ...props}) => <strong className="font-semibold" {...props} />,
+                                  ul: ({node, ...props}) => <ul className="list-disc pl-5 space-y-1 my-3" {...props} />,
+                                  ol: ({node, ...props}) => <ol className="list-decimal pl-5 space-y-1 my-3" {...props} />,
+                                  li: ({node, ...props}) => <li className="pl-1" {...props} />,
+                                  p: ({node, ...props}) => <p className="mb-3 last:mb-0" {...props} />,
+                                  a: ({node, href, ...props}) => {
+                                    const isTel = href?.startsWith('tel:');
+                                    const isInternal = href?.startsWith('/');
+                                    
+                                    const baseClass = `inline-flex items-center justify-center gap-2 px-5 py-2.5 mt-2 rounded-full font-medium text-sm transition-all shadow-sm hover:shadow-md ${
+                                      isDarkMode 
+                                        ? 'bg-[#8CC63F] text-zinc-900 hover:bg-[#a4d955] no-underline' 
+                                        : 'bg-[#0A3B73] text-white hover:bg-[#155AA8] no-underline'
+                                    }`;
+                                    
+                                    if (isInternal) {
+                                      return (
+                                        <Link to={href as string} className={baseClass}>
+                                          {props.children}
+                                          <ArrowRight className="w-4 h-4" />
+                                        </Link>
+                                      );
+                                    }
+                                    
+                                    return (
+                                      <a href={href} className={baseClass} {...props}>
+                                        {isTel && <Phone className="w-4 h-4" />}
+                                        {props.children}
+                                      </a>
+                                    );
+                                  },
+                                }}
+                              >
+                                {msg.content}
+                              </ReactMarkdown>
+                            </div>
                           </div>
                           
                           {msg.data && msg.data.recommendedKw && (
+                            <>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 w-full">
                                <div className={`p-3 sm:p-4 rounded-xl flex flex-col justify-center border transition-colors duration-200 ${
                                  isDarkMode ? 'bg-zinc-900/50 border-zinc-800' : 'bg-white border-slate-200'
@@ -368,6 +507,14 @@ export const SolarCalculator = () => {
                                  }`}>Tons</span></span>
                                </div>
                             </div>
+                            
+                            {msg.data.yearlySavings && (
+                              <SavingsChart yearlySavings={msg.data.yearlySavings} isDarkMode={isDarkMode} />
+                            )}
+                            {msg.data.recommendedKw && (
+                              <LeadCapture isDarkMode={isDarkMode} />
+                            )}
+                          </>
                           )}
                         </div>
                       </div>
@@ -405,26 +552,26 @@ export const SolarCalculator = () => {
             >
               <div className="max-w-3xl mx-auto relative group">
                 {/* Outer Glow */}
-                <div className="absolute -inset-[1.5px] rounded-[34px] opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 blur-[8px] overflow-hidden pointer-events-none">
+                <div className="absolute -inset-[1.5px] rounded-[34px] opacity-100 transition-opacity duration-500 blur-[8px] overflow-hidden pointer-events-none">
                   <div className="absolute top-1/2 left-1/2 w-[2000px] h-[2000px] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#4285F4,#EA4335,#FBBC05,#34A853,#4285F4)] animate-[spin_4s_linear_infinite]" />
                 </div>
                 
                 {/* Padding Wrapper for Sharp Border */}
                 <div className="relative w-full rounded-[34px] p-[1.5px] overflow-hidden z-10">
                   {/* The spinning gradient background */}
-                  <div className="absolute top-1/2 left-1/2 w-[2000px] h-[2000px] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#4285F4,#EA4335,#FBBC05,#34A853,#4285F4)] animate-[spin_4s_linear_infinite] opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                  <div className="absolute top-1/2 left-1/2 w-[2000px] h-[2000px] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#4285F4,#EA4335,#FBBC05,#34A853,#4285F4)] animate-[spin_4s_linear_infinite] opacity-100 transition-opacity duration-500 pointer-events-none" />
                   
                   <form onSubmit={handleAiSubmit} className={`relative z-10 w-full rounded-[32.5px] transition-all duration-200 flex flex-row items-end px-2 py-2 ${
                     isDarkMode 
-                      ? 'bg-zinc-900 group-focus-within:bg-zinc-900 border border-zinc-800' 
-                      : 'bg-slate-100 group-focus-within:bg-white'
+                      ? 'bg-zinc-900 border border-zinc-800' 
+                      : 'bg-white shadow-sm'
                   }`}>
                     <textarea
                       ref={textareaRef}
                       value={prompt}
                       onChange={adjustTextareaHeight}
                       onKeyDown={handleKeyDown}
-                      placeholder="Ask Goldi Solar"
+                      placeholder="Ask Goldi AI"
                       className={`flex-1 bg-transparent px-4 py-3 focus:outline-none resize-none overflow-y-auto text-[15px] leading-relaxed self-center max-h-[150px] ${
                         isDarkMode ? 'text-zinc-100 placeholder-zinc-500' : 'text-slate-700 placeholder-slate-500'
                       }`}

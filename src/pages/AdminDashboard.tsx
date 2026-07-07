@@ -17,7 +17,8 @@ import {
   Download,
   BookOpen,
   ArrowRight,
-  RefreshCw
+  RefreshCw,
+  Upload
 } from "lucide-react";
 
 export const AdminDashboard = () => {
@@ -32,13 +33,19 @@ export const AdminDashboard = () => {
   const [isSavingKb, setIsSavingKb] = useState(false);
   const [kbMessage, setKbMessage] = useState({ type: "", text: "" });
 
-  // Scraper State
+  // Scraper & PDF State
+  const [extractorTab, setExtractorTab] = useState<"link" | "pdf">("link");
   const [scrapeUrl, setScrapeUrl] = useState("");
   const [scrapeMode, setScrapeMode] = useState<"single" | "entire">("entire");
   const [maxPages, setMaxPages] = useState<number>(8);
   const [isScraping, setIsScraping] = useState(false);
   const [scrapeError, setScrapeError] = useState("");
   const [scrapedResult, setScrapedResult] = useState("");
+  
+  // PDF Upload State
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [isUploadingPdf, setIsUploadingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState("");
 
   const [isDarkMode, setIsDarkMode] = useState(() => document.body.classList.contains("global-dark"));
 
@@ -208,6 +215,42 @@ export const AdminDashboard = () => {
     }
   };
 
+  const handlePdfUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pdfFile) return;
+
+    setIsUploadingPdf(true);
+    setPdfError("");
+    setScrapedResult("");
+
+    const formData = new FormData();
+    formData.append("pdf", pdfFile);
+
+    try {
+      const res = await fetch("/api/admin/parse-pdf", {
+        method: "POST",
+        headers: {
+          "Authorization": password,
+          "X-Admin-Password": password
+        },
+        body: formData
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setScrapedResult(data.extractedContent || "No facts found.");
+        setPdfFile(null);
+        const fileInput = document.getElementById('pdf-upload') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
+      } else {
+        setPdfError(data.error || "Failed to parse PDF.");
+      }
+    } catch (err: any) {
+      setPdfError(err.message || "Failed to upload PDF.");
+    } finally {
+      setIsUploadingPdf(false);
+    }
+  };
+
   const handleAppendScraped = () => {
     if (!scrapedResult) return;
     const separator = knowledgeBase.trim() ? "\n\n" : "";
@@ -343,27 +386,43 @@ export const AdminDashboard = () => {
                     <Globe className="w-5 h-5 text-emerald-500" />
                   </div>
                   <div>
-                    <h3 className="font-display font-bold text-lg">Website Fact Scraper</h3>
+                    <h3 className="font-display font-bold text-lg">AI Fact Extractor</h3>
                     <p className={`text-xs ${isDarkMode ? "text-zinc-400" : "text-slate-500"}`}>
-                      Paste any web link. Our AI will automatically read and extract facts.
+                      Extract facts from a web link or a PDF document.
                     </p>
                   </div>
                 </div>
 
-                <form onSubmit={handleScrapeWebsite} className="space-y-4">
-                  <div>
-                    <input
-                      type="text"
-                      value={scrapeUrl}
-                      onChange={(e) => setScrapeUrl(e.target.value)}
-                      placeholder="e.g. www.goldisolar.com"
-                      className={`w-full px-4 py-3 rounded-2xl border text-sm focus:outline-none focus:ring-2 focus:ring-goldi-blue transition-all ${
-                        isDarkMode 
-                          ? "bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500" 
-                          : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400"
-                      }`}
-                    />
-                  </div>
+                <div className="flex bg-slate-100/50 dark:bg-zinc-800/50 p-1 rounded-xl mb-6">
+                  <button
+                    className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${extractorTab === 'link' ? 'bg-white dark:bg-zinc-900 shadow text-slate-800 dark:text-zinc-100' : 'text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-300'}`}
+                    onClick={() => setExtractorTab('link')}
+                  >
+                    Web Link
+                  </button>
+                  <button
+                    className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${extractorTab === 'pdf' ? 'bg-white dark:bg-zinc-900 shadow text-slate-800 dark:text-zinc-100' : 'text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-300'}`}
+                    onClick={() => setExtractorTab('pdf')}
+                  >
+                    PDF Document
+                  </button>
+                </div>
+
+                {extractorTab === 'link' && (
+                  <form onSubmit={handleScrapeWebsite} className="space-y-4">
+                    <div>
+                      <input
+                        type="text"
+                        value={scrapeUrl}
+                        onChange={(e) => setScrapeUrl(e.target.value)}
+                        placeholder="e.g. www.goldisolar.com"
+                        className={`w-full px-4 py-3 rounded-2xl border text-sm focus:outline-none focus:ring-2 focus:ring-goldi-blue transition-all ${
+                          isDarkMode 
+                            ? "bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500" 
+                            : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400"
+                        }`}
+                      />
+                    </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <button
@@ -439,6 +498,54 @@ export const AdminDashboard = () => {
                     )}
                   </button>
                 </form>
+                )}
+
+                {extractorTab === 'pdf' && (
+                  <form onSubmit={handlePdfUpload} className="space-y-4">
+                    <div className={`p-4 border-2 border-dashed rounded-2xl text-center ${isDarkMode ? 'border-zinc-700 bg-zinc-800/30' : 'border-slate-300 bg-slate-50'}`}>
+                      <input 
+                        type="file" 
+                        accept="application/pdf"
+                        id="pdf-upload"
+                        onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
+                        className="hidden"
+                      />
+                      <label htmlFor="pdf-upload" className="cursor-pointer flex flex-col items-center justify-center gap-2">
+                        <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                          <Upload className="w-5 h-5" />
+                        </div>
+                        <span className={`text-sm font-medium ${isDarkMode ? 'text-zinc-300' : 'text-slate-700'}`}>
+                          {pdfFile ? pdfFile.name : 'Click to select a PDF file'}
+                        </span>
+                        <span className="text-xs text-slate-500">Max size: 10MB</span>
+                      </label>
+                    </div>
+
+                    {pdfError && (
+                      <div className="p-3 text-xs rounded-xl bg-red-500/10 border border-red-500/20 text-red-500">
+                        {pdfError}
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={isUploadingPdf || !pdfFile}
+                      className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all font-semibold text-xs tracking-wide flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                    >
+                      {isUploadingPdf ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>AI is reading PDF text...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4" />
+                          <span>Extract Facts from PDF</span>
+                        </>
+                      )}
+                    </button>
+                  </form>
+                )}
               </div>
 
               {/* Scraped Results Preview */}
