@@ -429,7 +429,7 @@ export const SolarCalculator = () => {
                                     }
                                     
                                     return (
-                                      <a href={href} className={baseClass} {...props}>
+                                      <a href={href} target={isTel ? "_top" : "_blank"} rel="noopener noreferrer" className={baseClass} {...props}>
                                         {isTel && <Phone className="w-4 h-4" />}
                                         {props.children}
                                       </a>
