@@ -235,7 +235,7 @@ const Navbar = () => {
             aria-label="Go to Home"
             className={`flex items-center group transition-all duration-500 origin-center ${!isHomePage || scrolled ? "translate-y-0 scale-90" : "translate-y-[10px] md:translate-y-[20px] scale-100"}`}
           >
-            <img
+            <img loading="lazy"
               src="/goldi-logo.svg"
               alt="Goldi Solar Logo"
               width="200"
@@ -336,7 +336,7 @@ const Navbar = () => {
               {navLinks.map((link) => (
                 link.dropdown ? (
                   <div key={link.name} className="flex flex-col gap-1 mt-2 first:mt-0">
-                    <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider ${isDarkMode ? "text-zinc-500" : "text-slate-400"}`}>{link.name}</span>
+                    <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider ${isDarkMode ? "text-zinc-500" : "text-slate-600"}`}>{link.name}</span>
                     <div className="flex flex-col">
                       {link.dropdown.map((sublink) => (
                         <Link
@@ -373,7 +373,7 @@ const Navbar = () => {
                 </button>
                 <button
                   onClick={() => { if (!isDarkMode) toggleDarkMode(); }}
-                  className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold transition-all ${isDarkMode ? "bg-zinc-700 text-yellow-400 shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
+                  className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold transition-all ${isDarkMode ? "bg-zinc-700 text-yellow-400 shadow-sm" : "text-slate-600 hover:text-slate-600"}`}
                 >
                   <Moon className="w-3.5 h-3.5" /> Dark
                 </button>
@@ -418,12 +418,12 @@ const Footer = () => {
 
   const bgClass = isDarkMode ? 'bg-[#050505] border-zinc-800' : 'bg-white border-slate-200';
   const textTitleClass = isDarkMode ? 'text-white' : 'text-slate-900';
-  const textClass = isDarkMode ? 'text-zinc-400' : 'text-slate-400';
+  const textClass = isDarkMode ? 'text-zinc-400' : 'text-slate-600';
   const textHoverClass = isDarkMode ? 'hover:text-goldi-green' : 'hover:text-goldi-blue';
   const iconColor = isDarkMode ? 'text-goldi-green' : 'text-goldi-blue';
   const iconBg = isDarkMode ? 'bg-zinc-900 text-zinc-400 hover:bg-goldi-green hover:text-black' : 'bg-slate-100 text-slate-600 hover:bg-goldi-blue hover:text-white';
   const borderClass = isDarkMode ? 'border-zinc-800' : 'border-slate-200';
-  const copyRightClass = isDarkMode ? 'text-zinc-500' : 'text-slate-400';
+  const copyRightClass = isDarkMode ? 'text-zinc-500' : 'text-slate-600';
   const policyHoverClass = isDarkMode ? 'hover:text-goldi-green' : 'hover:text-slate-600';
   const logoFilterStyle = isDarkMode ? { filter: 'brightness(0) invert(1)' } : {};
 
@@ -433,7 +433,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 lg:gap-12 mb-16">
           <div className="col-span-1 lg:col-span-2">
             <div className="flex items-center mb-6">
-              <img
+              <img loading="lazy"
                 src="/goldi-logo.svg"
                 alt="Goldi Solar Logo"
                 width="200"
@@ -769,40 +769,13 @@ const Home = () => {
               <h1 className="sr-only">Powering the Future of Energy</h1>
               <motion.h1 aria-hidden="true"
                 className="font-display text-4xl sm:text-5xl md:text-7xl font-bold leading-tight mb-3 md:mb-6 text-slate-900 tracking-tight"
-                initial="hidden"
-                animate="visible"
-                variants={{
-                  visible: {
-                    transition: { staggerChildren: 0.05 },
-                  },
-                }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
               >
-                {"Powering the ".split("").map((char, index) => (
-                  <motion.span
-                    key={`1-${index}`}
-                    variants={{
-                      hidden: { opacity: 0, y: 20 },
-                      visible: { opacity: 1, y: 0 },
-                    }}
-                    className="inline-block"
-                  >
-                    {char === " " ? "\u00A0" : char}
-                  </motion.span>
-                ))}
-                <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0A3B73] to-[#8CC63F] inline-block">
-                  {"Future of Energy".split("").map((char, index) => (
-                    <motion.span
-                      key={`2-${index}`}
-                      variants={{
-                        hidden: { opacity: 0, y: 20 },
-                        visible: { opacity: 1, y: 0 },
-                      }}
-                      className="inline-block"
-                    >
-                      {char === " " ? "\u00A0" : char}
-                    </motion.span>
-                  ))}
+                Powering the <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0A3B73] to-[#8CC63F] inline-block pb-2">
+                  Future of Energy
                 </span>
               </motion.h1>
 
@@ -866,7 +839,7 @@ const Home = () => {
             <h2 className="font-display text-3xl md:text-5xl font-bold text-slate-900 mb-4">
               Core <span className="text-gradient">Solutions</span>
             </h2>
-            <p className="text-slate-400 max-w-2xl text-lg">
+            <p className="text-slate-600 max-w-2xl text-lg">
               Engineered for maximum output, durability, and seamless
               integration across residential, commercial, and utility-scale
               deployments.
@@ -910,7 +883,7 @@ const Home = () => {
                 <h3 className="font-display text-xl font-bold text-slate-900 mb-3">
                   EPC Services
                 </h3>
-                <p className="text-slate-400 text-sm mb-6">
+                <p className="text-slate-600 text-sm mb-6">
                   End-to-end solar engineering, procurement, and construction
                   for utility-scale projects globally.
                 </p>
@@ -932,7 +905,7 @@ const Home = () => {
                 <h3 className="font-display text-xl font-bold text-slate-900 mb-3">
                   IPP Solutions
                 </h3>
-                <p className="text-slate-400 text-sm mb-6">
+                <p className="text-slate-600 text-sm mb-6">
                   Independent Power Producer structuring. Financing, developing,
                   and operating renewable assets.
                 </p>
@@ -951,7 +924,7 @@ const Home = () => {
                 <h3 className="font-display text-xl font-bold text-slate-900 mb-2">
                   Quality & Certifications
                 </h3>
-                <p className="text-slate-400 max-w-lg">
+                <p className="text-slate-600 max-w-lg">
                   Our modules undergo rigorous testing and meet all major
                   international standards (ALMM, BIS, IEC, UL) ensuring decades
                   of reliable performance.
@@ -1554,7 +1527,7 @@ const CustomCursor = () => {
   
               {/* Moon core */}
               <div className="absolute w-[180px] h-[180px] rounded-full shadow-[0_0_80px_rgba(200,220,255,0.5)] overflow-hidden flex items-center justify-center bg-[#020205]">
-                <img 
+                <img loading="lazy" 
                   src="https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&w=600&q=80" 
                   alt="Moon"
                   width="180"

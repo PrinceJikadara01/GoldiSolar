@@ -284,7 +284,7 @@ export const SolarCalculator = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
                 >
-                  <img src="/favicon.png" alt="Goldi Solar" className="w-12 h-12 sm:w-14 sm:h-14 object-contain drop-shadow-sm animate-[spin_4s_linear_infinite]" />
+                  <img loading="lazy" src="/favicon.png" alt="Goldi Solar" className="w-12 h-12 sm:w-14 sm:h-14 object-contain drop-shadow-sm animate-[spin_4s_linear_infinite]" />
                   <span>
                     {getGreeting()}
                   </span>
@@ -395,7 +395,7 @@ export const SolarCalculator = () => {
                     ) : (
                       <div className="flex gap-4 w-full">
                         <div className="w-8 h-8 flex items-center justify-center shrink-0">
-                          <img src="/favicon.png" alt="Goldi AI" className="w-6 h-6 object-contain" />
+                          <img loading="lazy" src="/favicon.png" alt="Goldi AI" className="w-6 h-6 object-contain" />
                         </div>
                         <div className="flex-grow flex-1 space-y-4 md:space-y-6 pt-1 min-w-0">
                           <div className={`text-[15px] font-normal leading-relaxed ${
@@ -528,7 +528,7 @@ export const SolarCalculator = () => {
                     className="flex gap-4 w-full"
                   >
                     <div className="w-8 h-8 flex items-center justify-center shrink-0">
-                      <img src="/favicon.png" alt="Goldi AI" className="w-6 h-6 object-contain animate-spin" />
+                      <img loading="lazy" src="/favicon.png" alt="Goldi AI" className="w-6 h-6 object-contain animate-spin" />
                     </div>
                   </motion.div>
                 )}

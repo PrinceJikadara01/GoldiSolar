@@ -92,7 +92,7 @@ export const HelocPro = () => {
         >
           <h1 className="sr-only">Heloc Pro</h1>
           <div className="overflow-hidden h-14 md:h-[5.5rem] flex items-end">
-            <img 
+            <img loading="lazy" 
               src="https://heloc.goldisolar.com/wp-content/uploads/2021/12/goldi_Heloc.webp" 
               alt="Heloc Pro Logo" 
               className="h-24 md:h-40 object-contain"
