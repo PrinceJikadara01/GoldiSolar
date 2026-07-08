@@ -597,7 +597,7 @@ const Footer = () => {
 
         <div className={`pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-4 text-xs ${borderClass} ${copyRightClass}`}>
           <p>
-            &copy; {new Date().getFullYear()} Goldi Solar Futuristic Concept. All
+            &copy; {new Date().getFullYear()} Goldi Solar. All
             rights reserved.
           </p>
           <div className="flex gap-4">
