@@ -376,7 +376,7 @@ export const SolarCalculator = () => {
                 </div>
               </motion.div>
             ) : (
-              <div className="flex flex-col gap-10">
+              <div className="flex flex-col gap-6 md:gap-10">
                 {messages.map((msg) => (
                   <motion.div 
                     initial={{ opacity: 0, y: 10 }}
@@ -397,18 +397,18 @@ export const SolarCalculator = () => {
                         <div className="w-8 h-8 flex items-center justify-center shrink-0">
                           <img src="/favicon.png" alt="Goldi AI" className="w-6 h-6 object-contain" />
                         </div>
-                        <div className="flex-grow flex-1 space-y-6 pt-1 min-w-0">
-                          <div className={`text-[15px] font-normal leading-relaxed whitespace-pre-wrap ${
+                        <div className="flex-grow flex-1 space-y-4 md:space-y-6 pt-1 min-w-0">
+                          <div className={`text-[15px] font-normal leading-relaxed ${
                             isDarkMode ? 'text-zinc-100' : 'text-slate-900'
                           }`}>
                             <div className="markdown-body">
                               <ReactMarkdown
                                 components={{
                                   strong: ({node, ...props}) => <strong className="font-semibold" {...props} />,
-                                  ul: ({node, ...props}) => <ul className="list-disc pl-5 space-y-1 my-3" {...props} />,
-                                  ol: ({node, ...props}) => <ol className="list-decimal pl-5 space-y-1 my-3" {...props} />,
+                                  ul: ({node, ...props}) => <ul className="list-disc pl-5 space-y-1 my-2 md:my-3" {...props} />,
+                                  ol: ({node, ...props}) => <ol className="list-decimal pl-5 space-y-1 my-2 md:my-3" {...props} />,
                                   li: ({node, ...props}) => <li className="pl-1" {...props} />,
-                                  p: ({node, ...props}) => <p className="mb-3 last:mb-0" {...props} />,
+                                  p: ({node, ...props}) => <p className="mb-2 md:mb-3 last:mb-0" {...props} />,
                                   a: ({node, href, ...props}) => {
                                     const isTel = href?.startsWith('tel:');
                                     const isInternal = href?.startsWith('/');
@@ -423,13 +423,12 @@ export const SolarCalculator = () => {
                                       return (
                                         <Link to={href as string} className={baseClass}>
                                           {props.children}
-                                          <ArrowRight className="w-4 h-4" />
                                         </Link>
                                       );
                                     }
                                     
                                     return (
-                                      <a href={href} target={isTel ? "_top" : "_blank"} rel="noopener noreferrer" className={baseClass} {...props}>
+                                      <a href={href} target={isTel ? undefined : "_blank"} rel="noopener noreferrer" className={baseClass} {...props}>
                                         {isTel && <Phone className="w-4 h-4" />}
                                         {props.children}
                                       </a>

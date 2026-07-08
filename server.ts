@@ -218,7 +218,7 @@ Your task:
           yearlySavings: null,
           estimatedCost: null,
           co2ReductionTons: null,
-          message: greetingResponse.trim()
+          message: greetingResponse.trim().replace(/\n{3,}/g, '\n\n')
         });
       }
 
@@ -232,15 +232,15 @@ Our official company business guidelines and product knowledge base:
 ${knowledgeBase || "Goldi Solar is a leading quality-conscious solar brand in India."}
 
 Your task:
-1. Answer their question thoroughly, professionally, and warmly.
+1. Answer their question directly and concisely. Do not add long preambles.
 2. CRITICAL RULE: You MUST reply in the language specified as detectedLanguage: "${extractedData.detectedLanguage}".
    - If detectedLanguage is "English", you MUST answer 100% in pure English. Do NOT mix any Hindi, Hinglish, or Devanagari words.
    - If detectedLanguage is "Hindi" or "Hinglish", answer in natural Hinglish (using Latin script).
    - If detectedLanguage is "Gujarati", you MUST reply 100% in proper, grammatically correct Gujarati script (ગુજરાતી લિપિ). Do NOT write Gujarati using Latin/English letters, and do NOT mix Hindi words.
-3. If the user asks about products or solar modules, recommend the appropriate Goldi Solar products from the knowledge base (e.g., HELOC® or Gnate® Series) and include a link to our internal explore modules page (e.g., "Explore our modules here: [/explore-modules](/explore-modules)").
+3. If the user asks about products or solar modules, you MUST ONLY recommend the EXACT products listed in the knowledge base (e.g., "HELOC Pro" and "HELOC Plus"). Do NOT invent or mention older series like "Goldi Gnate" or "Goldi HELOC Series". Include a link to our internal explore modules page (e.g., "Explore our modules here: [Explore Modules](/explore-modules)").
 4. Do NOT assume any default bill amount, or perform any personalized calculations. Do not mention default numbers (like 2000 bill, 2.5 kW, etc.).
 5. End your response by nicely suggesting that if they want a personalized solar system size and savings estimate, they can share their monthly electricity bill (in ₹) or units consumed (in kWh).
-6. Keep the response natural, professional, and concise. Format your response into distinct, short lines/paragraphs separated by a blank line (\n\n) to make it highly readable.
+6. Structure the response beautifully using Markdown. Use short paragraphs and bullet points for readability. Separate paragraphs with exactly one blank line (\n\n). Do NOT use excessive blank lines.
 7. Also include a short Call To Action to contact us (e.g., "Contact us to get started: [1800-833-5511](tel:18008335511)") as the final line.`;
 
         let infoResponse = "";
@@ -269,7 +269,7 @@ Your task:
           yearlySavings: null,
           estimatedCost: null,
           co2ReductionTons: null,
-          message: infoResponse.trim()
+          message: infoResponse.trim().replace(/\n{3,}/g, '\n\n')
         });
       }
 
@@ -324,7 +324,7 @@ Your task:
           yearlySavings: null,
           estimatedCost: null,
           co2ReductionTons: null,
-          message: askResponse.trim()
+          message: askResponse.trim().replace(/\n{3,}/g, '\n\n')
         });
       }
 
@@ -378,7 +378,7 @@ CRITICAL RULES:
    - If detectedLanguage is "Gujarati", you MUST reply 100% in proper, grammatically correct Gujarati script (ગુજરાતી લિપિ). Do NOT write Gujarati using Latin/English characters. Do NOT mix Hindi or Hinglish words in the Gujarati response. Make it sound native and professional.
 2. DO NOT change or alter any of the calculated numbers above. Use them exactly as provided.
 3. Maximum 1 or 2 sentences total before the CTA. Do NOT explain the numbers, do NOT mention the environment or CO2, and do NOT repeat the dashboard stats. Just write a quick encouraging summary like "A solar system can significantly reduce your electricity bills!".
-4. Format your response into a single cohesive paragraph. Do not use excessive blank lines.
+4. Structure the response beautifully using Markdown. Use short paragraphs and bullet points if needed. Separate paragraphs with exactly one blank line (\n\n). Do NOT use excessive blank lines.
 5. ALWAYS include a brief Call to Action (CTA) at the end, formatted EXACTLY as a markdown link like this: "Contact us to get started: [1800-833-5511](tel:18008335511)".
 6. Do not return JSON. Just return the plain text response message.`;
 
@@ -410,7 +410,7 @@ CRITICAL RULES:
         yearlySavings: yearlySavings,
         estimatedCost: estimatedCost,
         co2ReductionTons: co2ReductionTons,
-        message: responseMessage.trim()
+        message: responseMessage.trim().replace(/\n{3,}/g, '\n\n')
       };
 
       res.json(resultPayload);
