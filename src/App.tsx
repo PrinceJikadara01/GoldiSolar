@@ -45,14 +45,15 @@ import {
   Calculator,
   ChevronDown,
   Moon,
+  Loader2,
 } from "lucide-react";
-import React, { useState, useEffect, useRef } from "react";
-import { SolarCalculator } from "./pages/SolarCalculator";
-import { HelocPro } from "./pages/HelocPro";
-import { HelocPlus } from "./pages/HelocPlus";
-import { ModuleShowcase } from "./pages/ModuleShowcase";
-import { ExploreModules } from "./pages/ExploreModules";
-import { AdminDashboard } from "./pages/AdminDashboard";
+import React, { useState, useEffect, useRef, Suspense, lazy } from "react";
+const SolarCalculator = lazy(() => import("./pages/SolarCalculator").then(module => ({ default: module.SolarCalculator })));
+const HelocPro = lazy(() => import("./pages/HelocPro").then(module => ({ default: module.HelocPro })));
+const HelocPlus = lazy(() => import("./pages/HelocPlus").then(module => ({ default: module.HelocPlus })));
+const ModuleShowcase = lazy(() => import("./pages/ModuleShowcase").then(module => ({ default: module.ModuleShowcase })));
+const ExploreModules = lazy(() => import("./pages/ExploreModules").then(module => ({ default: module.ExploreModules })));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard").then(module => ({ default: module.AdminDashboard })));
 import { GlobalPresenceGlobe } from "./components/GlobalPresenceGlobe";
 
 // --- Shared Components ---
@@ -179,7 +180,7 @@ const Navbar = () => {
                       {link.name}
                     </Link>
                   ))}
-                  <button onClick={toggleDarkMode} className={`flex items-center justify-center p-1.5 rounded-full transition-colors ${isDarkMode ? "bg-zinc-800 text-yellow-400" : "bg-slate-100 text-slate-600"}`}>
+                  <button aria-label="Toggle Dark Mode" onClick={toggleDarkMode} className={`flex items-center justify-center p-1.5 rounded-full transition-colors ${isDarkMode ? "bg-zinc-800 text-yellow-400" : "bg-slate-100 text-slate-600"}`}>
                     {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                   </button>
                 </div>
@@ -188,6 +189,8 @@ const Navbar = () => {
           </AnimatePresence>
 
           <button
+            aria-label="Toggle Menu"
+            aria-expanded={mobileMenuOpen}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className={`w-14 h-14 relative shrink-0 rounded-full shadow-[0_4px_20px_rgb(0,0,0,0.05)] flex items-center justify-center transition-all duration-500 z-[101] border overflow-hidden group ${isDarkMode ? "bg-white border-white hover:bg-slate-100 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]" : "bg-white backdrop-blur-md border-slate-200 hover:border-slate-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]"}`}
           >
@@ -229,11 +232,14 @@ const Navbar = () => {
         <div className="absolute left-1/2 lg:left-[40%] -translate-x-1/2 z-10">
           <Link
             to="/"
+            aria-label="Go to Home"
             className={`flex items-center group transition-all duration-500 origin-center ${!isHomePage || scrolled ? "translate-y-0 scale-90" : "translate-y-[10px] md:translate-y-[20px] scale-100"}`}
           >
             <img
               src="/goldi-logo.svg"
               alt="Goldi Solar Logo"
+              width="200"
+              height="64"
               className={`h-14 md:h-16 w-auto transition-transform duration-300 group-hover:scale-105 relative z-10 drop-shadow-sm`}
               style={logoFilterStyle}
             />
@@ -292,6 +298,7 @@ const Navbar = () => {
         </div>
 
         <button
+          aria-label="Toggle Navigation Menu"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className={`lg:hidden w-12 h-12 relative shrink-0 rounded-full flex items-center justify-center transition-all duration-500 z-20 border overflow-hidden group ${isDarkMode ? "bg-white border-white hover:bg-slate-100 shadow-[0_4px_20px_rgba(255,255,255,0.2)]" : "bg-white/50 backdrop-blur-md border-slate-200 hover:border-slate-300 shadow-[0_4px_20px_rgb(0,0,0,0.05)]"}`}
         >
@@ -429,6 +436,8 @@ const Footer = () => {
               <img
                 src="/goldi-logo.svg"
                 alt="Goldi Solar Logo"
+                width="200"
+                height="80"
                 className={`h-20 w-auto`}
                 style={logoFilterStyle}
               />
@@ -550,6 +559,7 @@ const Footer = () => {
                 href="https://www.facebook.com/goldisolar"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Goldi Solar on Facebook"
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${iconBg}`}
               >
                 <Facebook className="w-4 h-4" />
@@ -558,6 +568,7 @@ const Footer = () => {
                 href="https://www.instagram.com/goldisolar/"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Goldi Solar on Instagram"
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${iconBg}`}
               >
                 <Instagram className="w-4 h-4" />
@@ -566,6 +577,7 @@ const Footer = () => {
                 href="https://x.com/goldisolar"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Goldi Solar on X (Twitter)"
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${iconBg}`}
               >
                 <Twitter className="w-4 h-4" />
@@ -574,6 +586,7 @@ const Footer = () => {
                 href="https://www.linkedin.com/company/goldi-solar-private-limited/"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Goldi Solar on LinkedIn"
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${iconBg}`}
               >
                 <Linkedin className="w-4 h-4" />
@@ -880,6 +893,7 @@ const Home = () => {
                 <div className="mt-8">
                   <Link
                     to="/heloc-pro"
+                    aria-label="View HELOC Pro Specifications"
                     className="inline-flex items-center gap-2 text-goldi-blue font-medium hover:text-goldi-blue-light transition-colors"
                   >
                     View Specifications <ArrowRight className="w-4 h-4" />
@@ -902,6 +916,7 @@ const Home = () => {
                 </p>
                 <Link
                   to="/epc"
+                  aria-label="Learn more about EPC projects"
                   className="inline-flex items-center gap-2 text-goldi-blue text-sm font-medium hover:text-emerald-500"
                 >
                   Learn more <ArrowRight className="w-4 h-4" />
@@ -923,6 +938,7 @@ const Home = () => {
                 </p>
                 <Link
                   to="/contact"
+                  aria-label="Explore IPP solutions"
                   className="inline-flex items-center gap-2 text-goldi-blue-light text-sm font-medium hover:text-cyan-400"
                 >
                   Explore IPP <ArrowRight className="w-4 h-4" />
@@ -1541,6 +1557,8 @@ const CustomCursor = () => {
                 <img 
                   src="https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&w=600&q=80" 
                   alt="Moon"
+                  width="180"
+                  height="180"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover mix-blend-screen opacity-100 scale-[1.9] translate-x-[3px]"
                   style={{ filter: 'contrast(1.2) brightness(1.1)' }}
@@ -1672,18 +1690,20 @@ export default function App() {
         <Navbar />
         <main className="flex-grow flex flex-col relative w-full h-full">
           <AnimatePresence mode="wait">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/epc" element={<EPC />} />
-              <Route path="/goldi-ai" element={<SolarCalculator />} />
-              <Route path="/heloc-pro" element={<HelocPro />} />
-              <Route path="/heloc-plus" element={<HelocPlus />} />
-              <Route path="/module-anatomy" element={<ModuleShowcase />} />
-              <Route path="/explore-modules" element={<ExploreModules />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-            </Routes>
+            <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-white text-goldi-blue"><Loader2 className="w-8 h-8 animate-spin" /></div>}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/epc" element={<EPC />} />
+                <Route path="/goldi-ai" element={<SolarCalculator />} />
+                <Route path="/heloc-pro" element={<HelocPro />} />
+                <Route path="/heloc-plus" element={<HelocPlus />} />
+                <Route path="/module-anatomy" element={<ModuleShowcase />} />
+                <Route path="/explore-modules" element={<ExploreModules />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+              </Routes>
+            </Suspense>
           </AnimatePresence>
         </main>
         <Footer />
