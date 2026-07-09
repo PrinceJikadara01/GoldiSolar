@@ -180,4 +180,40 @@ body *, body .glass-panel {
   font-style: normal;
   font-variation-settings: "ELSH" 0;
 }
+@keyframes particle-up {
+  0% { transform: translateY(100px) scale(0); opacity: 0; }
+  50% { opacity: 1; transform: translateY(40px) scale(1.5); }
+  100% { transform: translateY(-20px) scale(0.5); opacity: 0; }
+}
+
+@keyframes sunlight-sweep {
+  0% { transform: translateX(-300%); }
+  100% { transform: translateX(500%); }
+}
+
+@keyframes pulse-scale {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+@keyframes pulse-scale-sm {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.02); opacity: 1; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+.animate-float-y { animation: float-y 6s ease-in-out infinite; }
+.animate-sunlight { animation: sunlight-sweep 5s ease-in-out infinite; }
+.animate-spin-slow { animation: spin 60s linear infinite; }
+.animate-pulse-scale { animation: pulse-scale 5s ease-in-out infinite; }
+.animate-pulse-scale-sm { animation: pulse-scale-sm 4s ease-in-out 0.5s infinite; }
+
 body.global-dark .bg-white\/90 { background-color: rgba(5, 5, 5, 0.9) !important; }

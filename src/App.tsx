@@ -54,7 +54,7 @@ const HelocPlus = lazy(() => import("./pages/HelocPlus").then(module => ({ defau
 const ModuleShowcase = lazy(() => import("./pages/ModuleShowcase").then(module => ({ default: module.ModuleShowcase })));
 const ExploreModules = lazy(() => import("./pages/ExploreModules").then(module => ({ default: module.ExploreModules })));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard").then(module => ({ default: module.AdminDashboard })));
-import { GlobalPresenceGlobe } from "./components/GlobalPresenceGlobe";
+const GlobalPresenceGlobe = lazy(() => import('./components/GlobalPresenceGlobe'));
 
 // --- Shared Components ---
 
@@ -640,8 +640,30 @@ const Home = () => {
     stiffness: 100,
   });
 
+  const containerRef = React.useRef<HTMLElement>(null);
+  const rectRef = React.useRef<DOMRect | null>(null);
+
+  const handleMouseEnter = () => {
+    if (containerRef.current) {
+      rectRef.current = containerRef.current.getBoundingClientRect();
+    }
+  };
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      rectRef.current = null;
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const handleMouseMove = (e: React.MouseEvent) => {
-    const rect = e.currentTarget.getBoundingClientRect();
+    if (!rectRef.current && containerRef.current) {
+      rectRef.current = containerRef.current.getBoundingClientRect();
+    }
+    if (!rectRef.current) return;
+    
+    const rect = rectRef.current;
     const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
     mouseX.set(x);
@@ -656,7 +678,9 @@ const Home = () => {
   return (
     <PageTransition>
       <section
+        ref={containerRef}
         className="relative pt-40 sm:pt-48 md:pt-64 pb-20 px-6 min-h-[85vh] md:min-h-screen flex flex-col justify-end md:justify-center overflow-hidden group"
+        onMouseEnter={handleMouseEnter}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
@@ -681,53 +705,25 @@ const Home = () => {
               transition={{ duration: 1.5, ease: "easeOut" }}
               className="w-full h-full transform-gpu"
             >
-              <motion.div
-                animate={{ y: [0, -15, 0] }}
-                transition={{
-                  duration: 6,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-                className="w-full h-full grid grid-cols-5 grid-rows-4 gap-[2px] md:gap-1 p-2 md:p-3 bg-[#e2e8f0]/90 backdrop-blur-xl border-2 border-goldi-blue/40 rounded-2xl md:rounded-3xl shadow-[0_40px_80px_rgba(10,59,115,0.3)] relative transform-gpu overflow-hidden"
+              <div
+                className="w-full h-full grid grid-cols-5 grid-rows-4 gap-[2px] md:gap-1 p-2 md:p-3 bg-[#e2e8f0] border-2 border-goldi-blue/40 rounded-2xl md:rounded-3xl shadow-[0_40px_80px_rgba(10,59,115,0.3)] relative transform-gpu overflow-hidden animate-float-y"
                 style={{ transformStyle: "preserve-3d" }}
               >
                 {/* Gentle Sunlight Sweep Animation */}
-                <motion.div
-                  animate={{ left: ["-150%", "250%"] }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 5,
-                    ease: "easeInOut",
-                    repeatDelay: 1,
-                  }}
-                  className="absolute top-0 bottom-0 w-[300px] bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-[35deg] z-20 mix-blend-overlay pointer-events-none"
-                  style={{ willChange: "left" }}
+                <div
+                  className="absolute top-0 bottom-0 left-0 w-[300px] bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-[35deg] z-20 pointer-events-none animate-sunlight"
+                  style={{ willChange: "transform" }}
                 />
 
                 {/* Energy Particles Flowing Up */}
                 {Array.from({ length: 15 }).map((_, i) => (
-                  <motion.div
+                  <div
                     key={`particle-${i}`}
-                    initial={{
-                      y: "100%",
-                      x: `${(i * 7) % 100}%`,
-                      opacity: 0,
-                      scale: 0,
-                    }}
-                    animate={{
-                      y: "-20%",
-                      opacity: [0, 1, 0],
-                      scale: [0, 1.5, 0.5],
-                    }}
-                    transition={{
-                      duration: 2 + (i % 3),
-                      repeat: Infinity,
-                      delay: i % 4,
-                      ease: "linear",
-                    }}
                     className="absolute w-2 h-2 rounded-full bg-goldi-green shadow-[0_0_15px_#8CC63F] z-30 pointer-events-none"
                     style={{
                       left: `${(i * 7) % 100}%`,
+                      bottom: "-10px",
+                      animation: `particle-up ${2 + (i % 3)}s linear ${i % 4}s infinite`,
                       willChange: "transform, opacity",
                     }}
                   />
@@ -753,7 +749,7 @@ const Home = () => {
                     <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-white/40 pointer-events-none" />
                   </div>
                 ))}
-              </motion.div>
+              </div>
             </motion.div>
           </div>
         </div>
@@ -889,10 +885,10 @@ const Home = () => {
                 </p>
                 <Link
                   to="/epc"
-                  aria-label="Learn more about EPC projects"
+                  aria-label="Explore our EPC solutions"
                   className="inline-flex items-center gap-2 text-goldi-blue text-sm font-medium hover:text-emerald-500"
                 >
-                  Learn more <ArrowRight className="w-4 h-4" />
+                  Explore EPC Solutions <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
             </div>
@@ -1083,7 +1079,9 @@ const About = () => {
 
           <div ref={globeRef} className="w-full h-[500px] md:h-[600px] bg-black rounded-3xl overflow-hidden relative shadow-2xl border border-slate-800 flex items-center justify-center">
             <div className="absolute inset-0 z-10">
-              <GlobalPresenceGlobe />
+              <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-slate-500">Loading map...</div>}>
+                <GlobalPresenceGlobe />
+              </Suspense>
             </div>
           </div>
 
@@ -1372,7 +1370,11 @@ const ScrollToTop = () => {
 };
 
 const CustomCursor = () => {
-  const [position, setPosition] = useState({ x: -100, y: -100 });
+  const cursorX = useMotionValue(0);
+  const cursorY = useMotionValue(0);
+  const smoothX = useSpring(cursorX, { damping: 25, stiffness: 200, mass: 0.8 });
+  const smoothY = useSpring(cursorY, { damping: 25, stiffness: 200, mass: 0.8 });
+
   const [isHovering, setIsHovering] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
@@ -1403,15 +1405,22 @@ const CustomCursor = () => {
 
   useEffect(() => {
     const updateInitialPos = () => {
-      const el = document.getElementById('sun-placeholder');
-      if (el) {
-        const rect = el.getBoundingClientRect();
-        setInitialPos({ 
-          x: rect.left, 
-          y: rect.top,
-          scale: window.innerWidth >= 1024 ? 0.8 : window.innerWidth >= 768 ? 0.5 : 0.3
-        });
-      }
+      requestAnimationFrame(() => {
+        const el = document.getElementById('sun-placeholder');
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          const newPos = { 
+            x: rect.left, 
+            y: rect.top,
+            scale: window.innerWidth >= 1024 ? 0.8 : window.innerWidth >= 768 ? 0.5 : 0.3
+          };
+          setInitialPos(newPos);
+          if (!hasInteracted) {
+            cursorX.set(newPos.x);
+            cursorY.set(newPos.y);
+          }
+        }
+      });
     };
     
     updateInitialPos();
@@ -1437,9 +1446,11 @@ const CustomCursor = () => {
     const updatePosition = (e: MouseEvent | TouchEvent) => {
       if (!hasInteracted) setHasInteracted(true);
       if ('touches' in e) {
-        setPosition({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+        cursorX.set(e.touches[0].clientX);
+        cursorY.set(e.touches[0].clientY);
       } else {
-        setPosition({ x: e.clientX, y: e.clientY });
+        cursorX.set(e.clientX);
+        cursorY.set(e.clientY);
       }
       if (!isVisible) setIsVisible(true);
     };
@@ -1480,17 +1491,8 @@ const CustomCursor = () => {
   return (
     <motion.div
       className="fixed top-0 left-0 z-[9999] pointer-events-none flex items-center justify-center w-0 h-0"
-      animate={{
-        x: hasInteracted ? (position.x === -100 ? initialPos.x : position.x) : initialPos.x,
-        y: hasInteracted ? (position.y === -100 ? initialPos.y : position.y) : initialPos.y,
-        opacity: isVisible || !hasInteracted || (position.x === -100 && hasInteracted) ? 1 : 0,
-      }}
-      transition={{ 
-        type: "spring", 
-        stiffness: hasInteracted ? 150 : 200,
-        damping: hasInteracted ? 20 : 30, 
-        mass: 0.8
-      }}
+      style={{ x: smoothX, y: smoothY }}
+      animate={{ opacity: isVisible || !hasInteracted ? 1 : 0 }}
     >
         <AnimatePresence mode="wait">
         {!hasInteracted && isHomePage && (
@@ -1514,21 +1516,17 @@ const CustomCursor = () => {
               transition={{ duration: 1.5, ease: "easeInOut" }}
             >
               {/* Moon glow */}
-              <motion.div
-                animate={{ scale: [1, 1.05, 1], opacity: [0.5, 0.8, 0.5] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute inset-[0px] bg-slate-300/30 rounded-full blur-[40px]"
+              <div
+                className="absolute inset-[0px] bg-slate-300/30 rounded-full blur-[40px] animate-pulse-scale"
               />
-              <motion.div
-                animate={{ scale: [1, 1.02, 1] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                className="absolute inset-[20px] bg-slate-200/40 rounded-full blur-[20px]"
+              <div
+                className="absolute inset-[20px] bg-slate-200/40 rounded-full blur-[20px] animate-pulse-scale-sm"
               />
-  
+
               {/* Moon core */}
               <div className="absolute w-[180px] h-[180px] rounded-full shadow-[0_0_80px_rgba(200,220,255,0.5)] overflow-hidden flex items-center justify-center bg-[#020205]">
                 <img loading="lazy" 
-                  src="https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&w=600&q=80" 
+                  src="https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&w=360&q=80" 
                   alt="Moon"
                   width="180"
                   height="180"
@@ -1549,10 +1547,8 @@ const CustomCursor = () => {
               transition={{ duration: 1.5, ease: "easeInOut" }}
             >
               {/* Sun Rays */}
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-                className="absolute w-[300px] h-[300px] opacity-30 z-0 pointer-events-none"
+              <div
+                className="absolute w-[300px] h-[300px] opacity-30 z-0 pointer-events-none animate-spin-slow"
                 style={{
                   background: 'repeating-conic-gradient(from 0deg, transparent 0deg 8deg, rgba(253,224,71,0.5) 8deg 16deg)',
                   maskImage: 'radial-gradient(circle, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 65%)',
@@ -1561,15 +1557,11 @@ const CustomCursor = () => {
               />
 
               {/* Sun glow */}
-              <motion.div
-                animate={{ scale: [1, 1.05, 1], opacity: [0.8, 1, 0.8] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute w-[280px] h-[280px] bg-yellow-400/60 rounded-full blur-[60px]"
+              <div
+                className="absolute w-[280px] h-[280px] bg-yellow-400/60 rounded-full blur-[60px] animate-pulse-scale"
               />
-              <motion.div
-                animate={{ scale: [1, 1.02, 1] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                className="absolute w-[200px] h-[200px] bg-amber-300/80 rounded-full blur-[40px]"
+              <div
+                className="absolute w-[200px] h-[200px] bg-amber-300/80 rounded-full blur-[40px] animate-pulse-scale-sm"
               />
   
               {/* Sun core */}

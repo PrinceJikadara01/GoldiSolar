@@ -16,17 +16,17 @@ export const GlobalPresenceGlobe = () => {
   };
 
   useEffect(() => {
-    const handleResize = () => {
-      if (containerRef.current) {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
         setDimensions({
-          width: containerRef.current.offsetWidth,
-          height: containerRef.current.offsetHeight
+          width: entry.contentRect.width,
+          height: entry.contentRect.height
         });
       }
-    };
-    window.addEventListener('resize', handleResize);
-    handleResize();
-    return () => window.removeEventListener('resize', handleResize);
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -126,3 +126,5 @@ export const GlobalPresenceGlobe = () => {
     </div>
   );
 };
+
+export default GlobalPresenceGlobe;
