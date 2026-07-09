@@ -56,6 +56,34 @@ const ExploreModules = lazy(() => import("./pages/ExploreModules").then(module =
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard").then(module => ({ default: module.AdminDashboard })));
 const GlobalPresenceGlobe = lazy(() => import('./components/GlobalPresenceGlobe'));
 
+const LazyGlobeComponent = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setIsVisible(true);
+        observer.disconnect();
+      }
+    }, { rootMargin: '300px' });
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} className="w-full h-full">
+      {isVisible ? (
+        <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-slate-500">Loading map...</div>}>
+          <GlobalPresenceGlobe />
+        </Suspense>
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-slate-500"></div>
+      )}
+    </div>
+  );
+};
+
 // --- Shared Components ---
 
 const ThemeToggle = ({ isDarkMode, toggleDarkMode, className = "" }: { isDarkMode: boolean, toggleDarkMode: () => void, className?: string }) => {
@@ -235,7 +263,7 @@ const Navbar = () => {
             aria-label="Go to Home"
             className={`flex items-center group transition-all duration-500 origin-center ${!isHomePage || scrolled ? "translate-y-0 scale-90" : "translate-y-[10px] md:translate-y-[20px] scale-100"}`}
           >
-            <img loading="lazy"
+            <img 
               src="/goldi-logo.svg"
               alt="Goldi Solar Logo"
               width="200"
@@ -699,8 +727,8 @@ const Home = () => {
             style={{ perspective: "1500px" }}
           >
             <motion.div
-              initial={{ rotateX: 65, rotateZ: -40, y: 150, opacity: 0 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ rotateX: 65, rotateZ: -40, y: 150 }}
+              animate={{ y: 0 }}
               style={{ rotateX, rotateZ, transformStyle: "preserve-3d" }}
               transition={{ duration: 1.5, ease: "easeOut" }}
               className="w-full h-full transform-gpu"
@@ -741,9 +769,7 @@ const Home = () => {
                     <div className="absolute inset-y-0 right-[25%] w-[1.5px] bg-white/40"></div>
 
                     {/* Horizontal fingers */}
-                    {Array.from({ length: 12 }).map((_, j) => (
-                      <div key={j} className="w-full h-[1px] bg-white/20"></div>
-                    ))}
+                    <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "repeating-linear-gradient(to bottom, transparent, transparent 8%, white 8%, white calc(8% + 1px))" }} />
 
                     {/* Glass Reflection static */}
                     <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-white/40 pointer-events-none" />
@@ -763,17 +789,14 @@ const Home = () => {
               </div>
 
               <h1 className="sr-only">Powering the Future of Energy</h1>
-              <motion.h1 aria-hidden="true"
-                className="font-display text-4xl sm:text-5xl md:text-7xl font-bold leading-tight mb-3 md:mb-6 text-slate-900 tracking-tight"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
+              <h1 aria-hidden="true"
+                className="font-display text-4xl sm:text-5xl md:text-7xl font-bold leading-tight mb-3 md:mb-6 text-slate-900 tracking-tight animate-fade-in-up"
               >
                 Powering the <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0A3B73] to-[#8CC63F] inline-block pb-2">
                   Future of Energy
                 </span>
-              </motion.h1>
+              </h1>
 
               <p className="text-base sm:text-lg md:text-xl text-slate-600 max-w-2xl mb-4 md:mb-10 leading-relaxed">
                 Accelerating the global transition to sustainable power with
@@ -1079,9 +1102,7 @@ const About = () => {
 
           <div ref={globeRef} className="w-full h-[500px] md:h-[600px] bg-black rounded-3xl overflow-hidden relative shadow-2xl border border-slate-800 flex items-center justify-center">
             <div className="absolute inset-0 z-10">
-              <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-slate-500">Loading map...</div>}>
-                <GlobalPresenceGlobe />
-              </Suspense>
+              <LazyGlobeComponent />
             </div>
           </div>
 
@@ -1525,7 +1546,7 @@ const CustomCursor = () => {
 
               {/* Moon core */}
               <div className="absolute w-[180px] h-[180px] rounded-full shadow-[0_0_80px_rgba(200,220,255,0.5)] overflow-hidden flex items-center justify-center bg-[#020205]">
-                <img loading="lazy" 
+                <img 
                   src="https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&w=360&q=80" 
                   alt="Moon"
                   width="180"
