@@ -18,7 +18,12 @@ import {
   BookOpen,
   ArrowRight,
   RefreshCw,
-  Upload
+  Upload,
+  Calendar,
+  TrendingUp,
+  Users,
+  Search,
+  Filter
 } from "lucide-react";
 
 export const AdminDashboard = () => {
@@ -32,6 +37,33 @@ export const AdminDashboard = () => {
   const [isFetchingKb, setIsFetchingKb] = useState(false);
   const [isSavingKb, setIsSavingKb] = useState(false);
   const [kbMessage, setKbMessage] = useState({ type: "", text: "" });
+
+  
+  const [activeTab, setActiveTab] = useState<"knowledge" | "contact_inquiries" | "ai_inquiries">("contact_inquiries");
+  const [inquiries, setInquiries] = useState<any[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dateFilter, setDateFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [isFetchingInquiries, setIsFetchingInquiries] = useState(false);
+
+  const fetchInquiries = async (pass: string) => {
+    setIsFetchingInquiries(true);
+    try {
+      const res = await fetch("/api/admin/inquiries", {
+        headers: { Authorization: `Bearer ${pass}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setInquiries(data.inquiries || []);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsFetchingInquiries(false);
+    }
+  };
 
   // Scraper & PDF State
   const [extractorTab, setExtractorTab] = useState<"link" | "pdf">("link");
@@ -80,6 +112,7 @@ export const AdminDashboard = () => {
         setIsAuthorized(true);
         setPassword(pass);
         fetchKnowledgeBase(pass);
+        fetchInquiries(pass);
       } else {
         localStorage.removeItem("goldi_admin_pass");
       }
@@ -272,6 +305,51 @@ export const AdminDashboard = () => {
     setTimeout(() => setKbMessage({ type: "", text: "" }), 6000);
   };
 
+  const handleDownloadCSV = () => {
+    const filteredInquiries = activeTab === "contact_inquiries" 
+      ? inquiries.filter(i => i.type !== "Solar Calculator Lead") 
+      : inquiries.filter(i => i.type === "Solar Calculator Lead");
+
+    if (!filteredInquiries.length) {
+      alert("No data to export");
+      return;
+    }
+
+    let csvContent = "";
+    if (activeTab === "contact_inquiries") {
+      csvContent += "Date,Name,Email,Type,Message\n";
+    } else {
+      csvContent += "Date,Name,Phone Number\n";
+    }
+
+    filteredInquiries.forEach(inq => {
+      const dateStr = inq.createdAt 
+        ? new Date(inq.createdAt._seconds ? inq.createdAt._seconds * 1000 : inq.createdAt).toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) 
+        : 'N/A';
+        
+      const safeString = (str: any) => {
+        if (!str) return '""';
+        return '"' + String(str).replace(/"/g, '""') + '"';
+      };
+
+      if (activeTab === "contact_inquiries") {
+        csvContent += `${safeString(dateStr)},${safeString(inq.firstName + ' ' + inq.lastName)},${safeString(inq.email)},${safeString(inq.type)},${safeString(inq.message)}\n`;
+      } else {
+        const phone = inq.email ? inq.email.replace("@placeholder.com", "") : "-";
+        csvContent += `${safeString(dateStr)},${safeString(inq.firstName + ' ' + inq.lastName)},${safeString(phone)}\n`;
+      }
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `${activeTab === "contact_inquiries" ? "Contact_Inquiries" : "Goldi_AI_Leads"}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (!isAuthorized) {
     return (
       <PageTransition>
@@ -376,7 +454,29 @@ export const AdminDashboard = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="flex gap-4 mb-6">
+            <button
+              onClick={() => { setActiveTab("contact_inquiries"); setCurrentPage(1); setSearchQuery(""); setDateFilter("all"); setTypeFilter("all"); }}
+              className={`px-6 py-3 rounded-full font-bold text-sm transition-all ${activeTab === "contact_inquiries" ? "bg-goldi-blue text-white" : "bg-transparent border border-slate-200 text-slate-500 hover:bg-slate-50"}`}
+            >
+              Contact Inquiries
+            </button>
+            <button
+              onClick={() => { setActiveTab("ai_inquiries"); setCurrentPage(1); setSearchQuery(""); setDateFilter("all"); setTypeFilter("all"); }}
+              className={`px-6 py-3 rounded-full font-bold text-sm transition-all ${activeTab === "ai_inquiries" ? "bg-goldi-blue text-white" : "bg-transparent border border-slate-200 text-slate-500 hover:bg-slate-50"}`}
+            >
+              Goldi AI Leads
+            </button>
+            <button
+              onClick={() => { setActiveTab("knowledge"); setCurrentPage(1); }}
+              className={`px-6 py-3 rounded-full font-bold text-sm transition-all ${activeTab === "knowledge" ? "bg-goldi-blue text-white" : "bg-transparent border border-slate-200 text-slate-500 hover:bg-slate-50"}`}
+            >
+              Knowledge Base
+            </button>
+          </div>
+
+          {activeTab === "knowledge" ? (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
             {/* Scraper / Web Link Module */}
             <div className="lg:col-span-5 flex flex-col gap-8">
@@ -679,8 +779,233 @@ export const AdminDashboard = () => {
                 </div>
               </div>
             </div>
-
           </div>
+          ) : activeTab === "contact_inquiries" || activeTab === "ai_inquiries" ? (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <div className="lg:col-span-12">
+                <div className={`p-6 rounded-3xl border shadow-sm flex flex-col ${isDarkMode ? "bg-zinc-900/30 border-zinc-800" : "bg-white border-slate-200"}`}>
+                                    <div className="flex justify-between items-center mb-6">
+                    <h3 className="font-display font-bold text-lg">{activeTab === "contact_inquiries" ? "Contact Inquiries" : "Goldi AI Leads"}</h3>
+                    <div className="flex items-center gap-3">
+                      <button onClick={handleDownloadCSV} className={`text-sm flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-colors ${isDarkMode ? 'border-zinc-700 hover:bg-zinc-800 text-zinc-300' : 'border-slate-200 hover:bg-slate-50 text-slate-600'}`}>
+                        <Download className="w-4 h-4" />
+                        Export CSV
+                      </button>
+                      <button onClick={() => fetchInquiries(password)} className={`p-1.5 rounded-lg transition-colors ${isDarkMode ? 'text-zinc-400 hover:text-goldi-blue hover:bg-zinc-800' : 'text-slate-500 hover:text-goldi-blue hover:bg-slate-50'}`} title="Refresh Data">
+                        <RefreshCw className={`w-4.5 h-4.5 ${isFetchingInquiries ? "animate-spin" : ""}`} />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="overflow-x-auto">
+                                        {(() => {
+                      const now = new Date();
+                      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                      const weekStart = new Date(now);
+                      weekStart.setDate(now.getDate() - now.getDay()); // Start of this week
+                      weekStart.setHours(0,0,0,0);
+                      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+                      let filteredInquiries = activeTab === "contact_inquiries" 
+                        ? inquiries.filter(i => i.type !== "Solar Calculator Lead") 
+                        : inquiries.filter(i => i.type === "Solar Calculator Lead");
+
+                      if (searchQuery) {
+                        const lowerQuery = searchQuery.toLowerCase();
+                        filteredInquiries = filteredInquiries.filter(i => 
+                          (i.firstName && i.firstName.toLowerCase().includes(lowerQuery)) ||
+                          (i.lastName && i.lastName.toLowerCase().includes(lowerQuery)) ||
+                          (i.email && i.email.toLowerCase().includes(lowerQuery)) ||
+                          (i.message && i.message.toLowerCase().includes(lowerQuery))
+                        );
+                      }
+
+                      if (dateFilter !== "all") {
+                        filteredInquiries = filteredInquiries.filter(i => {
+                          const date = i.createdAt ? new Date(i.createdAt._seconds ? i.createdAt._seconds * 1000 : i.createdAt) : null;
+                          if (!date) return false;
+                          if (dateFilter === "today") return date >= todayStart;
+                          if (dateFilter === "week") return date >= weekStart;
+                          if (dateFilter === "month") return date >= monthStart;
+                          return true;
+                        });
+                      }
+
+                      if (activeTab === "contact_inquiries" && typeFilter !== "all") {
+                        filteredInquiries = filteredInquiries.filter(i => i.type === typeFilter);
+                      }
+                      
+                      const stats = filteredInquiries.reduce((acc, inq) => {
+                        acc.total++;
+                        const date = inq.createdAt ? new Date(inq.createdAt._seconds ? inq.createdAt._seconds * 1000 : inq.createdAt) : null;
+                        if (date) {
+                          if (date >= todayStart) {
+                            acc.today++;
+                          }
+                          if (date >= weekStart) {
+                            acc.week++;
+                          }
+                        }
+                        return acc;
+                      }, { total: 0, today: 0, week: 0 });
+
+                      const totalPages = Math.ceil(filteredInquiries.length / itemsPerPage) || 1;
+                      const startIndex = (currentPage - 1) * itemsPerPage;
+                      const paginatedInquiries = filteredInquiries.slice(startIndex, startIndex + itemsPerPage);
+
+                      return (
+                        <>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div className={`p-4 rounded-2xl border flex items-center gap-4 ${isDarkMode ? 'bg-zinc-800/50 border-zinc-700/50' : 'bg-slate-50 border-slate-100'}`}>
+                              <div className="w-10 h-10 rounded-full bg-goldi-blue/10 flex items-center justify-center">
+                                <Users className="w-5 h-5 text-goldi-blue" />
+                              </div>
+                              <div>
+                                <p className={`text-xs font-medium ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>Total Inquiries</p>
+                                <p className="text-xl font-bold">{stats.total}</p>
+                              </div>
+                            </div>
+                            <div className={`p-4 rounded-2xl border flex items-center gap-4 ${isDarkMode ? 'bg-zinc-800/50 border-zinc-700/50' : 'bg-slate-50 border-slate-100'}`}>
+                              <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                                <Calendar className="w-5 h-5 text-emerald-500" />
+                              </div>
+                              <div>
+                                <p className={`text-xs font-medium ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>Today</p>
+                                <p className="text-xl font-bold">{stats.today}</p>
+                              </div>
+                            </div>
+                            <div className={`p-4 rounded-2xl border flex items-center gap-4 ${isDarkMode ? 'bg-zinc-800/50 border-zinc-700/50' : 'bg-slate-50 border-slate-100'}`}>
+                              <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+                                <TrendingUp className="w-5 h-5 text-amber-500" />
+                              </div>
+                              <div>
+                                <p className={`text-xs font-medium ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>This Week</p>
+                                <p className="text-xl font-bold">{stats.week}</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                            <div className="relative flex-1">
+                              <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`} />
+                              <input 
+                                type="text"
+                                placeholder="Search by name, email, or message..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className={`w-full pl-9 pr-4 py-2 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-goldi-blue/50 ${isDarkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                              />
+                            </div>
+                            <div className="flex gap-2">
+                              <select
+                                value={dateFilter}
+                                onChange={(e) => setDateFilter(e.target.value)}
+                                className={`px-3 py-2 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-goldi-blue/50 ${isDarkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                              >
+                                <option value="all">All Time</option>
+                                <option value="today">Today</option>
+                                <option value="week">This Week</option>
+                                <option value="month">This Month</option>
+                              </select>
+                              {activeTab === "contact_inquiries" && (
+                                <select
+                                  value={typeFilter}
+                                  onChange={(e) => setTypeFilter(e.target.value)}
+                                  className={`px-3 py-2 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-goldi-blue/50 ${isDarkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                                >
+                                  <option value="all">All Types</option>
+                                  <option value="General Inquiry">General Inquiry</option>
+                                  <option value="Solar Consultation">Solar Consultation</option>
+                                  <option value="Support">Support</option>
+                                  <option value="Partnership">Partnership</option>
+                                </select>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <table className="w-full text-sm text-left">
+
+                            <thead className={`text-xs uppercase ${isDarkMode ? 'bg-zinc-800 text-zinc-400' : 'bg-slate-50 text-slate-500'}`}>
+                              <tr>
+                                <th className="px-6 py-3 rounded-tl-xl">Date</th>
+                                <th className="px-6 py-3">Name</th>
+                                {activeTab === "contact_inquiries" ? (
+                                  <>
+                                    <th className="px-6 py-3">Email</th>
+                                    <th className="px-6 py-3">Type</th>
+                                    <th className="px-6 py-3 rounded-tr-xl">Message</th>
+                                  </>
+                                ) : (
+                                  <th className="px-6 py-3 rounded-tr-xl">Phone Number</th>
+                                )}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {filteredInquiries.length === 0 ? (
+                                <tr>
+                                  <td colSpan={activeTab === "contact_inquiries" ? 5 : 3} className="px-6 py-8 text-center text-slate-500">
+                                    {isFetchingInquiries ? "Loading inquiries..." : "No inquiries found."}
+                                  </td>
+                                </tr>
+                              ) : (
+                                paginatedInquiries.map((inq, idx) => (
+                                  <tr key={inq.id || idx} className={`border-b ${isDarkMode ? 'border-zinc-800' : 'border-slate-100'}`}>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                      {inq.createdAt ? new Date(inq.createdAt._seconds ? inq.createdAt._seconds * 1000 : inq.createdAt).toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'N/A'}
+                                    </td>
+                                    <td className="px-6 py-4 font-medium">{inq.firstName} {inq.lastName}</td>
+                                    {activeTab === "contact_inquiries" ? (
+                                      <>
+                                        <td className="px-6 py-4">{inq.email}</td>
+                                        <td className="px-6 py-4">
+                                          <span className="px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-semibold">
+                                            {inq.type}
+                                          </span>
+                                        </td>
+                                        <td className="px-6 py-4 max-w-xs truncate" title={inq.message}>
+                                          {inq.message || "-"}
+                                        </td>
+                                      </>
+                                    ) : (
+                                      <td className="px-6 py-4">{inq.email ? inq.email.replace("@placeholder.com", "") : "-"}</td>
+                                    )}
+                                  </tr>
+                                ))
+                              )}
+                            </tbody>
+                          </table>
+                          {totalPages > 1 && (
+                            <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-zinc-800">
+                              <span className="text-sm text-slate-500 dark:text-zinc-400">
+                                Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredInquiries.length)} of {filteredInquiries.length} Entries
+                              </span>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                  disabled={currentPage === 1}
+                                  className="px-3 py-1 rounded-lg border border-slate-200 dark:border-zinc-700 text-sm font-medium hover:bg-slate-50 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                  Previous
+                                </button>
+                                <button
+                                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                  disabled={currentPage === totalPages}
+                                  className="px-3 py-1 rounded-lg border border-slate-200 dark:border-zinc-700 text-sm font-medium hover:bg-slate-50 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                  Next
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
 
         </div>
       </div>

@@ -1,3 +1,4 @@
+import Vapi from "@vapi-ai/web";
 import {
   BrowserRouter as Router,
   Routes,
@@ -1234,7 +1235,79 @@ const About = () => {
   );
 };
 
-const Contact = () => (
+const Contact = () => {
+
+  const [vapiCallStatus, setVapiCallStatus] = React.useState<'idle' | 'calling' | 'active' | 'ended'>('idle');
+  const [vapiError, setVapiError] = React.useState('');
+  const vapiInstance = React.useRef<any>(null);
+
+  const startVapiCall = async () => {
+    try {
+      setVapiCallStatus('calling');
+      const configRes = await fetch('/api/vapi/config');
+      const config = await configRes.json();
+      
+      if (!config.publicKey || !config.assistantId) {
+        setVapiError('Vapi configuration missing on server.');
+        setVapiCallStatus('idle');
+        return;
+      }
+      
+      const vapi = new Vapi(config.publicKey);
+      vapiInstance.current = vapi;
+      
+      vapi.on('call-start', () => setVapiCallStatus('active'));
+      vapi.on('call-end', () => setVapiCallStatus('ended'));
+      vapi.on('error', (e: any) => {
+        console.error('Vapi Error:', e);
+        setVapiError(e.message || 'Call failed');
+        setVapiCallStatus('ended');
+      });
+      
+      await vapi.start(config.assistantId);
+    } catch (err) {
+      console.error(err);
+      setVapiError('Failed to start call');
+      setVapiCallStatus('ended');
+    }
+  };
+
+
+  const [formData, setFormData] = React.useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    type: 'Solar Modules Inquiry',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [submitStatus, setSubmitStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+    try {
+      const res = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      if (res.ok) {
+        setSubmitStatus('success');
+        startVapiCall();
+      } else {
+        setSubmitStatus('error');
+      }
+    } catch (err) {
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
   <PageTransition>
     <div className="pt-40 sm:pt-48 pb-20 px-6 min-h-screen max-w-7xl mx-auto">
       <div className="mb-16 text-center">
@@ -1294,7 +1367,7 @@ const Contact = () => (
         <div className="lg:col-span-2">
           <form
             className="glass-panel p-8 md:p-10 flex flex-col gap-6"
-            onSubmit={(e) => e.preventDefault()}
+            onSubmit={handleSubmit}
           >
             <h3 className="text-2xl font-bold text-slate-900 mb-2 font-display">
               Send us a Message
@@ -1311,6 +1384,9 @@ const Contact = () => (
                   type="text"
                   className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 focus:outline-none focus:border-goldi-blue focus:ring-1 focus:ring-goldi-blue transition-all"
                   placeholder="John"
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  required
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -1321,25 +1397,48 @@ const Contact = () => (
                   type="text"
                   className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 focus:outline-none focus:border-goldi-blue focus:ring-1 focus:ring-goldi-blue transition-all"
                   placeholder="Doe"
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                 />
               </div>
             </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-semibold text-slate-700">
-                Email Address
-              </label>
-              <input
-                type="email"
-                className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 focus:outline-none focus:border-goldi-blue focus:ring-1 focus:ring-goldi-blue transition-all"
-                placeholder="john@example.com"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-slate-700">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 focus:outline-none focus:border-goldi-blue focus:ring-1 focus:ring-goldi-blue transition-all"
+                  placeholder="john@example.com"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-slate-700">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 focus:outline-none focus:border-goldi-blue focus:ring-1 focus:ring-goldi-blue transition-all"
+                  placeholder="+91 9876543210"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  required
+                />
+              </div>
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-slate-700">
                 Inquiry Type
               </label>
               <div className="relative">
-                <select className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 focus:outline-none focus:border-goldi-blue focus:ring-1 focus:ring-goldi-blue transition-all [&>option]:bg-white">
+                <select
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 focus:outline-none focus:border-goldi-blue focus:ring-1 focus:ring-goldi-blue transition-all [&>option]:bg-white">
                   <option>Solar Modules Inquiry</option>
                   <option>EPC Services</option>
                   <option>Franchise / Partnership</option>
@@ -1365,20 +1464,76 @@ const Contact = () => (
                 rows={5}
                 className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 focus:outline-none focus:border-goldi-blue focus:ring-1 focus:ring-goldi-blue transition-all resize-none"
                 placeholder="How can we help you?"
+                value={formData.message}
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                required
               />
             </div>
-            <button
-              type="submit"
-              className="btn-primary justify-center mt-2 py-4 text-lg"
-            >
-              Submit Inquiry
-            </button>
+            
+            {submitStatus === 'success' ? (
+              <div className="mt-4 p-5 rounded-xl border flex flex-col items-center justify-center gap-4 text-center bg-slate-50 border-slate-200">
+                <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                <div>
+                  <h4 className="font-semibold text-slate-900">Inquiry Submitted!</h4>
+                  <p className="text-sm mt-1 text-slate-500">Our Solar AI Assistant is connecting with you now...</p>
+                </div>
+                
+                {vapiCallStatus === 'calling' && (
+                  <div className="flex items-center gap-2 text-goldi-blue">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="text-sm font-medium animate-pulse">Dialing...</span>
+                  </div>
+                )}
+                
+                {vapiCallStatus === 'active' && (
+                  <div className="flex flex-col items-center">
+                     <div className="relative flex h-12 w-12 items-center justify-center mb-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-10 w-10 bg-emerald-500 items-center justify-center">
+                          <Phone className="w-4 h-4 text-white" />
+                        </span>
+                      </div>
+                      <span className="text-emerald-500 font-medium text-sm">Call in progress...</span>
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          vapiInstance.current?.stop();
+                          setVapiCallStatus('ended');
+                        }}
+                        className="mt-4 px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full text-xs font-medium transition-colors"
+                      >
+                        End Call
+                      </button>
+                  </div>
+                )}
+                
+                {vapiCallStatus === 'ended' && (
+                  <div className="text-sm font-medium text-slate-500">Call Ended.</div>
+                )}
+              </div>
+            ) : (
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="btn-primary justify-center mt-2 py-4 text-lg disabled:opacity-50"
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Inquiry'}
+              </button>
+            )}
+            
+            {submitStatus === 'error' && (
+              <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-600 rounded-xl text-center">
+                Failed to submit inquiry. Please try again.
+              </div>
+            )}
+  
           </form>
         </div>
       </div>
     </div>
   </PageTransition>
-);
+  );
+};
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();

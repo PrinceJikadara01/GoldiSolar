@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { PageTransition } from '../App';
 import ReactMarkdown from 'react-markdown';
+import Vapi from "@vapi-ai/web";
+
 import { AreaChart as RechartsAreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Send, Loader2, Sparkles, Plus, Search, Monitor, ChevronDown, Mic, Zap, AreaChart, DollarSign, ShieldCheck, ArrowRight, Phone, TrendingUp, User, ArrowRightCircle, CheckCircle2 } from 'lucide-react';
+import { Send, Loader2, Sparkles, Plus, Search, Monitor, ChevronDown, Mic, Zap, AreaChart, IndianRupee, ShieldCheck, ArrowRight, Phone, TrendingUp, User, ArrowRightCircle, CheckCircle2 } from 'lucide-react';
 
 type Message = {
   id: string;
@@ -52,15 +54,120 @@ const SavingsChart = ({ yearlySavings, isDarkMode }: { yearlySavings: number, is
 };
 
 const LeadCapture = ({ isDarkMode }: { isDarkMode: boolean }) => {
+
+  const [vapiCallStatus, setVapiCallStatus] = useState<'idle' | 'calling' | 'active' | 'ended'>('idle');
+  const [vapiError, setVapiError] = useState('');
+  const vapiInstance = useRef<any>(null);
+
+
   const [submitted, setSubmitted] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(false);
+    try {
+      const res = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: name,
+          email: phone + "@placeholder.com",
+          phone: phone,
+          type: 'Solar Calculator Lead',
+          message: 'Phone number: ' + phone
+        })
+      });
+      if (res.ok) {
+        setSubmitted(true);
+        startVapiCall();
+      } else {
+        setError(true);
+      }
+    } catch (err) {
+      setError(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const startVapiCall = async () => {
+    try {
+      setVapiCallStatus('calling');
+      const configRes = await fetch('/api/vapi/config');
+      const config = await configRes.json();
+      
+      if (!config.publicKey || !config.assistantId) {
+        setVapiError('Vapi configuration missing on server.');
+        setVapiCallStatus('idle');
+        return;
+      }
+      
+      const vapi = new Vapi(config.publicKey);
+      vapiInstance.current = vapi;
+      
+      vapi.on('call-start', () => setVapiCallStatus('active'));
+      vapi.on('call-end', () => setVapiCallStatus('ended'));
+      vapi.on('error', (e) => {
+        console.error('Vapi Error:', e);
+        setVapiError(e.message || 'Call failed');
+        setVapiCallStatus('ended');
+      });
+      
+      // Override first message dynamically if possible, otherwise use standard assistant
+      await vapi.start(config.assistantId);
+    } catch (err) {
+      console.error(err);
+      setVapiError('Failed to start call');
+      setVapiCallStatus('ended');
+    }
+  };
+
 
   if (submitted) {
     return (
-      <div className={`mt-4 p-4 rounded-xl border flex items-center gap-3 ${isDarkMode ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
-        <CheckCircle2 className="w-5 h-5" />
-        <span className="text-sm font-medium">Thank you! Our solar expert will contact you shortly.</span>
+      <div className={`mt-4 p-5 rounded-xl border flex flex-col items-center justify-center gap-4 text-center ${isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-slate-50 border-slate-200'}`}>
+        <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+        <div>
+          <h4 className={`font-semibold ${isDarkMode ? 'text-zinc-100' : 'text-slate-900'}`}>Request Received!</h4>
+          <p className={`text-sm mt-1 ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>Our Solar AI Assistant is connecting with you now...</p>
+        </div>
+        
+        {vapiCallStatus === 'calling' && (
+          <div className="flex items-center gap-2 text-goldi-blue">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm font-medium animate-pulse">Dialing...</span>
+          </div>
+        )}
+        
+        {vapiCallStatus === 'active' && (
+          <div className="flex flex-col items-center">
+             <div className="relative flex h-12 w-12 items-center justify-center mb-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-10 w-10 bg-emerald-500 items-center justify-center">
+                  <Phone className="w-4 h-4 text-white" />
+                </span>
+              </div>
+              <span className="text-emerald-500 font-medium text-sm">Call in progress...</span>
+              <button 
+                onClick={() => {
+                  vapiInstance.current?.stop();
+                  setVapiCallStatus('ended');
+                }}
+                className="mt-4 px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full text-xs font-medium transition-colors"
+              >
+                End Call
+              </button>
+          </div>
+        )}
+        
+        {vapiCallStatus === 'ended' && (
+          <div className="text-sm font-medium text-slate-500">Call Ended.</div>
+        )}
       </div>
     );
   }
@@ -70,7 +177,7 @@ const LeadCapture = ({ isDarkMode }: { isDarkMode: boolean }) => {
       <h4 className={`text-[15px] font-semibold mb-1 ${isDarkMode ? 'text-zinc-100' : 'text-slate-900'}`}>Would you like our team to contact you?</h4>
       <p className={`text-xs mb-4 ${isDarkMode ? 'text-zinc-400' : 'text-slate-500'}`}>Get a free precise quotation.</p>
       
-      <form onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }} className="space-y-3">
+      <form onSubmit={handleSubmit} className="space-y-3">
         <div className="relative">
           <User className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDarkMode ? 'text-zinc-500' : 'text-slate-400'}`} />
           <input 
@@ -97,12 +204,16 @@ const LeadCapture = ({ isDarkMode }: { isDarkMode: boolean }) => {
             }`}
           />
         </div>
+        
+        {error && <div className="text-red-500 text-xs">Failed to submit. Please try again.</div>}
         <button 
           type="submit" 
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-goldi-blue hover:bg-[#0A3B73] text-white text-sm font-medium transition-colors"
+          disabled={isSubmitting}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-goldi-blue hover:bg-[#0A3B73] text-white text-sm font-medium transition-colors disabled:opacity-50"
         >
-          Request Callback <ArrowRightCircle className="w-4 h-4" />
+          {isSubmitting ? 'Sending...' : <>Request Callback <ArrowRightCircle className="w-4 h-4" /></>}
         </button>
+  
       </form>
     </div>
   );
@@ -189,7 +300,9 @@ export const SolarCalculator = () => {
   };
 
   useEffect(() => {
-    scrollToBottom();
+    if (isAiLoading || (messages.length > 0 && messages[messages.length - 1].role === 'user')) {
+      scrollToBottom();
+    }
   }, [messages.length, isAiLoading]);
 
   const handleAiSubmit = async (e?: React.FormEvent) => {
@@ -480,7 +593,7 @@ export const SolarCalculator = () => {
                                  isDarkMode ? 'bg-zinc-900/50 border-zinc-800' : 'bg-white border-slate-200'
                                }`}>
                                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-                                   <DollarSign className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                   <IndianRupee className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                                    <span className={`text-[10px] sm:text-[11px] font-medium uppercase tracking-wider line-clamp-1 ${
                                      isDarkMode ? 'text-zinc-400' : 'text-slate-500'
                                    }`}>Savings/Yr</span>

@@ -10,6 +10,14 @@ import multer from "multer";
 let pdfParse: any;
 
 dotenv.config();
+import * as admin from 'firebase-admin';
+import { initializeApp, getApps } from 'firebase-admin/app';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+
+if (!getApps().length) {
+  initializeApp({ projectId: 'gen-lang-client-0677594192' });
+}
+const db = getFirestore("ai-studio-goldisolar-87f10c8c-361d-4db6-9935-dc43f25a3083");
 
 const openai = new OpenAI({
   apiKey: process.env.NVIDIA_API_KEY || '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',
@@ -743,7 +751,70 @@ Your task:
     }
   });
 
+  
+  
+  const INQUIRIES_FILE = path.join(process.cwd(), "inquiries.json");
+  
+  app.post("/api/inquiries", async (req, res) => {
+    try {
+      const { firstName, lastName, email, phone, type, message } = req.body;
+      if (!firstName || !email) {
+        return res.status(400).json({ error: "Name and email are required." });
+      }
+      
+      const inquiry = {
+        id: Date.now().toString(),
+        firstName,
+        lastName: lastName || "",
+        email,
+        phone: phone || "",
+        type: type || "Other",
+        message: message || "",
+        createdAt: Date.now(),
+        status: "new"
+      };
+      
+      let inquiries = [];
+      if (fs.existsSync(INQUIRIES_FILE)) {
+        inquiries = JSON.parse(fs.readFileSync(INQUIRIES_FILE, "utf8"));
+      }
+      inquiries.push(inquiry);
+      fs.writeFileSync(INQUIRIES_FILE, JSON.stringify(inquiries, null, 2), "utf8");
+      
+      res.status(201).json({ id: inquiry.id, message: "Inquiry saved successfully." });
+    } catch (err) {
+      console.error("Error saving inquiry:", err);
+      res.status(500).json({ error: "Failed to save inquiry." });
+    }
+  });
+
+  app.get("/api/vapi/config", (req, res) => {
+    res.json({
+      publicKey: process.env.VAPI_PUBLIC_KEY || process.env.VAPI_API_KEY || "",
+      assistantId: process.env.VAPI_ASSISTANT_ID || ""
+    });
+  });
+
+  app.get("/api/admin/inquiries", verifyAdmin, async (req, res) => {
+    try {
+      let inquiries = [];
+      if (fs.existsSync(INQUIRIES_FILE)) {
+        inquiries = JSON.parse(fs.readFileSync(INQUIRIES_FILE, "utf8"));
+      }
+      inquiries.sort((a, b) => b.createdAt - a.createdAt);
+      res.json({ inquiries });
+    } catch (err) {
+      console.error("Error fetching inquiries:", err);
+      res.status(500).json({ error: "Failed to fetch inquiries." });
+    }
+  });
+
+  
+  app.get("/api/debug-env", (req, res) => {
+    res.json(Object.keys(process.env).filter(k => k.includes("FIREBASE") || k.includes("GOOGLE") || k.includes("GCLOUD")));
+  });
   // Vite middleware for development
+
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
