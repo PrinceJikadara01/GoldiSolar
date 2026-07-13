@@ -12,9 +12,27 @@
 - Products Offered: High-efficiency Mono PERC solar panels, Bifacial solar panels, Solar Inverters, and complete EPC utility-scale / residential solar installations.
 
 [SOLAR PANEL PRODUCT LINE]
-- Goldi HELOC Pro Series: Our flagship N-Type TOPCon module. Delivering unprecedented power output (up to 710W) and efficiency for maximum energy harvest.
-- Goldi HELOC Plus Series: High-efficiency bifacial modules designed for optimal performance (up to 670W).
-- Warranty: Goldi Solar panels come with a 12-year product warranty and a 25-year linear performance warranty.
+ 1) HELOC® PRO PRODUCT SPECIFICATIONS:
+   - Product Series: Heloc̣® Pro module series (High Efficiency Low on Carbon).
+   - Technology: Mono-facial and bi-facial modules featuring M10 wafer size, half-cell structure, and multi-busbar technology.
+   - Energy Yield: Generates 7.5% more energy per square meter compared to traditional solar panels.
+   - Visual Aesthetics & Variants: Available in silver and black frames across four stylistic configurations: white, transparent, glass-to-glass, and all-black.
+   - Peak Power Capacity: Maximum power output reaches up to 560 Wp.
+   - Conversion Efficiency: Achieves module convergence efficiency up to 21.70%.
+   - Low-Light Performance: Features advanced glass and cell surface textured design to ensure enhanced operation in low-light environments.
+   - Structural Load Strengths: Withstands a mechanical snow load up to 5400 Pa and a wind load up to 2400 Pa.
+   - System Compatibility: Adaptable with tracker systems, fixed mounting setups, central inverters, string inverters, and panel cleaning robots.
+   - Core Portfolio: Includes both polycrystalline and monocrystalline product categories.
+
+ 2) HELOC® PLUS PRODUCT SPECIFICATIONS:
+   - Product Series: Heloc̣® Plus module series (High Efficiency Low On Carbon).
+   - Technology: 132-Cell Heterojunction Bifacial Half Cut Cell Module utilizing N-type silicon wafers and non-destructive pre-cut technology.
+   - Peak Power Capacity: Features a 710 Wp N-Type solar panel.
+   - Conversion Efficiency: Reaches a module conversion efficiency of up to 22.85%.
+   - Bifacial Power Gain: Generates up to 30% higher front-side power than conventional modules, and up to 25% more power from the backside.
+   - Weak Light Performance: Provides a +0.5~1% enhancement in weak light performance.
+   - Warranty: Offers an eminent linear performance warranty of 88% power per watt.
+   - Durability: Equipped with an IP68 Junction Box providing a high waterproof level.
 
 [SOLAR CALCULATION GUIDELINES]
 - For residential solar in India, standard calculations are:
@@ -30,3 +48,149 @@
 - We only install systems in India.
 - Finance Options: Solar rooftop loans are available from partner banks like SBI, HDFC, and SIDBI at attractive interest rates.
 - Do NOT provide random estimations or assume default bills unless the user is asking for a generic calculation or has provided numbers.
+
+[COMPANY OVERVIEW]
+- Role: India’s leading solar panel manufacturer, EPC service provider, and Independent Power Producer.
+- Mission: Driving sustainability through innovative solar solutions, aligning with India’s goals of decarbonization, self-reliance (Atma-nirbhar) in solar manufacturing, and achieving Net Zero emissions before 2070.
+
+[MANUFACTURING & GROWTH]
+- Capacity: India’s largest Solar PV module manufacturing company with an annual capacity of 15.2 GW.
+- Recent Expansion: Achieved the largest and highest manufacturing expansion in India’s renewable industry for Solar PV Modules, growing from 3 GW to 15.2 GW within a 14-month period.
+- Facilities: Operates AI-powered, state-of-the-art manufacturing facilities in Gujarat, India, located at Pipodara, Navsari, Kosamba, and Nana Borsara.
+- Backward Integration: Set to establish its largest expansion in a solar cell manufacturing facility by 2026.
+- History: Founded in 2011, supplying solar PV modules domestically and globally.
+
+[LEADERSHIP & FOUNDERS]
+- Capt. Ishver Dholakiya (Founder & Managing Director):
+  * Founded Goldi Solar in 2011 driven by a passion for environmental causes and sustainable energy.
+  * Mentored by his uncle Shri Govindbhai Dholakia and father Shri Arjanbhai Dholakia.
+  * Active philanthropist engaging in sustainability, healthcare, education, and disaster response through the Goldi Foundation and Shardaben Arjanbhai Dholakia Welfare Trust (SHABD).
+- Dhruv Dholakiya (Director):
+  * Third-generation entrepreneur who completed a family tradition ("Rupya ni Kadar") surviving for 45 days in Kochi on minimal money by working odd jobs (mall cleaner, restaurant waiter, roadside lime juice vendor).
+  * Worked as a trainee across all departments before being appointed Director.
+  * Focuses on Brand Custodianship, Marketing, and International Business expansion.
+
+[MANUFACTURING EXCELLENCE & QUALITY ASSURANCE]
+- Infrastructure: Features a highly resilient, automated, and computerized manufacturing line incorporating robotics to ensure uniform production standards.
+- Testing Procedures: Every solar panel undergoes a series of evaluations assessing efficiency and output capabilities across adverse climatic conditions and diverse geographical locations.
+- Specialized Capabilities: One of the few companies globally to achieve a 4mm glass certification.
+- Raw Materials & Operations: Utilizes premium raw materials and a highly skilled workforce, backed by regular in-house training for production teams.
+
+[INDIAN & INTERNATIONAL CERTIFICATIONS]
+- Design & Safety Standards: Certified under IEC CB Scheme, IEC 61215:2021, IEC 61730:2023, UL 61703-1&2, and IS 14286 & IS/IEC 61730.
+- Environmental & Reliability Testing: Certified for Ammonia Test (IEC 62716), Salt Mist Corrosion (IEC 61701), Performance & Energy Rating (IEC 61853-1&2), Transportation Test (IEC 62759-1), Dust & Sand Environment Test (IEC 60068-2-68), PID Resistance (IEC 62804), and Calibration (IEC 60904).
+- Management Systems: Holds ISO 9001, ISO 14001, and ISO 45001 certifications.
+
+[SUBSIDIARY OPERATIONS]
+- Entity Name: Goldi Sun Private Limited.
+- Background: Incorporated in 2020 as a subsidiary of Goldi Solar Private Limited to carry out manufacturing-related business.
+- Market Footprint: Operates under an Indian MNC structure catering to India and over 20 countries globally.
+- Navsari Plant: The subsidiary's first plant is established in Navsari, Gujarat, featuring a 2 GW manufacturing capacity dedicated to high-efficiency photovoltaic modules.
+
+[CORPORATE VALUES & SUSTAINABILITY LOGIC]
+- Environmental Rationale: 1 kW of solar power saves 77 kg of coal from being burned and prevents 136 kg of CO₂ from being released into the atmosphere.
+- Corporate Vision: To empower the world with clean, renewable and accessible energy, ensuring a brighter future for generations ahead.
+- Corporate Core Values (RESCQ):
+  * Respect: For the law, environment, employers, colleagues, communities, and cultures.
+  * Ethics: Deep belief in Integrity, Honesty, and Transparency in all business aspects.
+  * Service: Customer-centric focus aimed at exceeding expectations in quality, product, speed, responsiveness, and on-time service.
+  * Commitment: Dedicated to achieving energy independence with positive social and environmental impacts.
+  * Quality: Operating as a brand synonymous with uncompromising quality and customer satisfaction.
+
+[AWARDS & STRATEGIC MILESTONES]
+- Kiwa PVEL 'Top Performer' (2024): Elite reliability classification achieved by only 50 manufacturers globally, with 16 distinct modules featured in the Scorecard.
+- BNEF Tier 1 Solar PV Manufacturer (2020): One of only four Indian and 15 international companies to qualify under Bloomberg New Energy Finance bankability criteria at that time.
+- Green Manufacturing Recognition: Awarded "Best in Practices in Green Manufacturing" at the EXIM Club Awards.
+- Suryacon Mumbai Conference Accolades (2019): Named both "EPC Company of The Year 2019" (Commercial Category) and "Most Promising Module Manufacturer of the Year 2019" by EQ International Magazine.
+- State & National Growth Rankings:
+  * Conferred with the "Best Company Award" for Production & Profitability Growth by the Government of Gujarat.
+  * Ranked among "The Best 100 SME companies of India for quality and fastest growth."
+  * Recognized and certified as a "Star Export House" of India by the Ministry of Commerce & Industry.
+- Strategic Partnerships & MoUs:
+  * Strategic investment MoU executed at the India-Saudi Arabia Investment Forum 2023.
+  * Workforce development MoUs signed with the Ministry of Labour and Skill Development (Gujarat), DG Kaushalya, and the SRK Knowledge Foundation for professional skill training.
+  * Received the Bharat Ke Ratna Award from Divya Bhaskar.
+
+  [CORPORATE SOCIAL RESPONSIBILITY & SOCIAL IMPACT]
+- Circular CSR Framework: Integrates circular economy principles into CSR initiatives, focusing on community building, environmental stewardship, renewable energy, infrastructure, education, and skill development.
+- Community Building & Village Adoption: 
+  * Actively invests in education, healthcare, infrastructure, and self-reliance by adopting specific villages, including Dudhala and Chikhalda.
+  * Supports local agricultural communities by distributing locally produced rice from the Dang region during festive periods like Diwali.
+- Local Workforce Integration: Recruits 40% of its manufacturing workforce directly from the local Dang community.
+- Specialized Skill Training: Partners with the L&T Public Charitable Trust to create specialized training programs tailored for the solar PV manufacturing industry.
+- Youth & Athletic Empowerment: Provides financial aid, mentorship, and training facility access to young athletes, such as runner Murli Kumar Gavit.
+- Vulnerable Population Solarization: Committed to installing free solar panel systems to power the homes of the 41 workers rescued from the Uttarakhand tunnel collapse.
+
+[EPC SECTOR & PROJECTS]
+- Project Track Record: Achieved over 5,100 rooftop projects and a track record of 20,000+ successful solar projects, including commercial and utility portfolios.
+- Project Status: Has 29 MW of tendered projects with 171.75 MW in the pipeline.
+- Systems & Models: Offers On Grid, Off Grid Hybrid, and Solar Pumps using a Capex model (purchase and run your solar system).
+- Sectors Covered: Residential, Commercial, Industrial, and Agricultural.
+- In-House Services: System Design & Engineering, Supply, Installation & Commissioning, Technical Support on Regulatory Issues, and Maintenance Contracts, with no third-party involvement.
+- Operations & Maintenance: Prioritizes post-commissioning management using SCADA implementation monitoring software to minimize downtime.
+
+[SOLAR WATER PUMPS]
+- Track Record: Delivered 20,000+ solar pumps in India, providing an alternative to diesel with automatic dawn-to-dusk operation features.
+- Applications: Agricultural irrigation, rural and urban water supply, community projects, and industrial use.
+- Core System Features: Equipped with motors, maximum power point tracker (MPPT) support, and built-in detectors for under-voltage, over-voltage, short-circuit, and dry-run scenarios.
+- Components Supplied: 
+  * Goldi Solar PV modules with a 25-year power warranty.
+  * GI/HDGI Module Mounting Structure with fixed or manual tracking.
+  * AC or DC stainless steel pump set with pipe, cable, PP rope, and earthing accessories.
+  * Solar Pump Controller (for DC pumps) or Solar Pump Inverter / VFD (for AC pumps).
+  * Remote monitoring unit (available on request).
+- Basic Selection Criteria: Water source depth & diameter, static water level, summer season drawdown, pipeline details (type, length, and diameter), and daily water requirement.
+
+[INDEPENDENT POWER PRODUCER (IPP) SOLUTIONS]
+- Capacity & Region: Completed 30 MW of ground-mounted solar PV projects across Gujarat.
+- Commercial Model: Supplies clean power to corporations, hospitals, and trusts through long-term Power Purchase Agreements (PPAs) within their solar parks.
+
+[CORPORATE & FACTORY LOCATIONS]
+- Corporate Office: Goldi House, Ring Rd, beside Vanita Vishram, Athwa Gate, Surat, Gujarat 395001.
+- Registered Office: 706, Wallfort House, Opp. Eagle Bakery, Jawahar Nagar, SV Road, Goregaon, (W), Mumbai - 400 062.
+- Regional Office: Workspaces By Innova, H-54, Sector-63, Noida - 201301.
+- Pipodra Factory: Block no 149, J & K1, NH 48, Pipodara, Gujarat 394110.
+- Navsari Factory: Survey No. 920, Nr. Mafatlal Mills Talav, Vejalpore Road, Navsari, Gujarat -396445.
+- Nana Borsara Factory: Opposite the Rose Garden hotel, Mangrol, Nana Borsara, Surat, Gujarat, 394125, India.
+- Kosamba Factory: Block No.341, Prime Industrial and Logistic Hub, Nr. P.P. Savani University, NH-48, Mangrol, Dhamdod, Gujarat-394125, India.
+
+[CONTACT DETAILS & GRIEVANCE CUSTOMER SERVICE]
+- Universal Helpline: 1800-833-5511
+- Grievance Contact Representative: Selvin G.
+- Grievance Phone Line: 0261 719 9999
+- Contact Email: info@goldisolar.com
+
+[HELOC® PRO EXTENDED DATA & VARIANTS]
+- Standard Portfolio Protections: All white frame (WF), transparent frame (TF), and all black frame (BF) variants feature a standard 12-year warranty for materials and processing alongside a 25-year warranty for linear power output.
+- Glass-to-Glass (GF) Protection: All glass-to-glass (GF) variants feature an extended 30-year warranty for linear power output.
+- Component Standards: All listed variants are equipped with an IP68 junction box offering high waterproof protection and feature an Anti-PID performance guarantee.
+- Global Contact Channels: 
+  * USA Inquiries: sales.usa@goldisolar.com | goldisolar.us | +1 (586) 3211064
+  * India Inquiries: info@goldisolar.com | goldisolar.com | 1800 833 5511
+
+[P-TYPE CELL VARIANT SPECIFICATIONS]
+- GS10-M144-WF (525 Wp - 555 Wp): White frame variant achieving up to 21.49% efficiency.
+- GS10-B144-TF (525 Wp - 550 Wp): Transparent frame variant achieving up to 21.30% efficiency.
+- GS10-B144-GF (525 Wp - 550 Wp): Glass-to-glass variant achieving up to 21.30% efficiency.
+- GS10-M144-BF (525 Wp - 540 Wp): All black frame variant achieving up to 20.91% efficiency.
+- GS10-M144-WF (500 Wp - 550 Wp): Alternate white frame variant achieving up to 21.30% efficiency.
+- GS10-M132-BF (480 Wp - 495 Wp): All black frame variant achieving up to 20.85% efficiency.
+- GS10-M132-WF (480 Wp - 505 Wp): White frame variant achieving up to 21.28% efficiency.
+- GS10-B132-TF (480 Wp - 505 Wp): Transparent frame variant achieving up to 21.28% efficiency.
+- GS10-B132-GF (480 Wp - 505 Wp): Glass-to-glass variant achieving up to 21.28% efficiency.
+- GS10-M120-WF (435 Wp - 460 Wp): White frame variant achieving up to 21.26% efficiency.
+- GS10-B120-TF (435 Wp - 460 Wp): Transparent frame variant achieving up to 21.26% efficiency.
+- GS10-B120-GF (435 Wp - 460 Wp): Glass-to-glass variant achieving up to 21.26% efficiency.
+- GS10-M120-BF (435 Wp - 450 Wp): All black frame variant achieving up to 20.79% efficiency.
+- GS10-M108-WF (390 Wp - 415 Wp): White frame variant achieving up to 21.17% efficiency.
+- GS10-B108-TF (390 Wp - 415 Wp): Transparent frame variant achieving up to 21.17% efficiency.
+- GS10-B108-GF (390 Wp - 415 Wp): Glass-to-glass variant achieving up to 21.17% efficiency.
+- GS10-M108-BF (390 Wp - 405 Wp): All black frame variant achieving up to 20.66% efficiency.
+
+[N-TYPE CELL VARIANT SPECIFICATIONS]
+- Core Technology: Utilizes N-Type solar cell technology featuring Zero LID (Light Induced Degradation), No-LeTID, and a 10% to 30% additional power generation gain compared to regular modules.
+- Target Environments: Broadened application compliance covering Building-Integrated Photovoltaics (BIPV), vertical installations, snowfields, high-humidity zones, and high-wind or dusty locations.
+- GS10-T144-GF (555 Wp - 570 Wp): N-Type glass-to-glass variant achieving up to 22.06% efficiency.
+- GS10-T132-GF (515 Wp - 530 Wp): N-Type glass-to-glass variant achieving up to 22.30% efficiency.
+- GS10-T120-GF (465 Wp - 480 Wp): N-Type glass-to-glass variant achieving up to 22.16% efficiency.
+- GS10-T108-GF (415 Wp - 435 Wp): N-Type glass-to-glass variant achieving up to 22.17% efficiency.
